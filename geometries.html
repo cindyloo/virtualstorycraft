@@ -104,7 +104,7 @@
 			function init() {
 
 					container = document.getElementById( containerId );
-					var renderer = new THREE.WebGLRenderer( { antialias: true } );
+					renderer = new THREE.WebGLRenderer( { antialias: true } );
 					renderer.setClearColor( 0xffffff );
 					renderer.setSize( container.clientWidth, container.clientHeight );
 					container.appendChild( renderer.domElement );
@@ -149,14 +149,14 @@
 					context.fillRect( 0, 0, canvas.width, canvas.height );
 
 					switch (containerId){
-						case 0: //"box":
+						case "box": //"box":
 						
 						$("#box").append(createBox(scene, position));
 						
 						break;
-						case 1: //"pyramid":
+						case "pyramid":
 						
-						$("#pyramid").append(createPyramid(scene2, position));
+						$("#pyramid").append(createPyramid(scene, position));
 						
 						break;
 						
@@ -179,10 +179,6 @@
 
 					];
 
-				
-
-					renderer = new THREE.WebGLRenderer( { antialias: true } );
-
 
 					
 
@@ -203,7 +199,7 @@
 				this.animate = function() {
 
 					render();
-					stats.update();
+					//stats.update();
 
 				};
 
@@ -225,35 +221,7 @@
 			document.addEventListener("mousedown", onDocumentMouseDown, false);
 			document.addEventListener("mousemove", onDocumentMouseMove, false);
 			document.addEventListener("mouseup", onDocumentMouseUp, false);
-				
-            render();
-        
-      /*  function init(){
-        // creating a new scene, renderer, camera
-        // setting up the renderer
-			var renderer = new THREE.WebGLRenderer();
-			renderer.setSize(window.innerWidth, window.innerHeight);
-			document.body.appendChild(renderer.domElement);
-			var scene = new THREE.Scene();
 			
-			
-			renderer = new THREE.WebGLRenderer( { antialias: true } );
-			renderer.setClearColor( 0xffffff );
-			renderer.setSize( container.clientWidth, container.clientHeight );
-			container.appendChild( renderer.domElement );
-			
-			// CAMERA
-			var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
-			var VIEW_ANGLE = 100, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-			var camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
-			camera.target = new THREE.Vector3(0, 0, 0);
-			camera.position.set(0,50,300);
-			camera.lookAt(scene.position);	
-			
-			scene.add(camera);
-			var controls = new THREE.OrbitControls( camera, renderer.domElement );
-        
-        }*/
         
         function createSphere(scene, pos, texture){
 				// creation of a big sphere geometry
@@ -292,7 +260,7 @@
 		
 		function createPyramid(scene, pos, texture){
 
-			scene.add(camera);
+	
 			var pyramid = new THREE.CylinderGeometry(0, 50, 50, 4, false); 		
 			var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
 			faceColors.forEach( function(color, idx) 
