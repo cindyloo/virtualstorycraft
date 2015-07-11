@@ -211,25 +211,27 @@ var video = document.getElementById( 'myVideo' );
 				controls = new THREE.PointerLockControls( camera );
 				scene.add( controls.getObject() );
 
-			var position0 = {x:200, y:200, z:Math.floor( Math.random() * 20 - 10 ) * 90};
-			scene = createBox(scene, position0, "assets/stacy/texture-inside.jpg", "assets/stacy/texture-atlas.jpg");
+			var position0 = {x:200, y:200, z:Math.floor( Math.random() * 20 - 10 ) * 10};
+			scene = createBox(scene, position0, "assets/stacy/texture-inside.jpg", "assets/jack/texture-atlas.jpg");
 			
-			var position = {x:100, y:200, z:Math.floor( Math.random() * 20 - 10 ) * 90};
-			scene = createSphere(scene, position, "assets/stacy/texture-inside.jpg", "assets/cindy/beat_hotel_tex_outside.jpg")
+			var position = {x:100, y:200, z:Math.floor( Math.random() * 20 - 10 ) * 10};
+			scene.add(createSphere(scene, position, "assets/stacy/texture-inside.jpg", "assets/kit/texture-atlas.jpg"));
 			
-			var position2 = {x:20, y:100, z:Math.floor( Math.random() * 20 - 10 ) * 90};
-			scene = createSphere(scene, position2, "assets/test.mp4", "assets/cindy/beat_hotel_tex_outside.jpg")			
+			var position2 = {x:20, y:00, z:Math.floor( Math.random() * 20 - 10 ) * 10};
+			scene.add(createSphere(scene, position2, "assets/test.mp4", "assets/kit/texture-atlas.jpg"));		
 					
-			var roofGeo = new THREE.CylinderGeometry(0, 150, 150, 4, false); 		
-			var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+			var roofGeo = new THREE.CylinderGeometry(0, 100, 100, 4, false); 		
+			var faceColors = [0xff0011, 0x11ff00, 0x1100ff, 0xffff00];
 			faceColors.forEach( function(color, idx) 
 				{ roofGeo.faces[2 * idx + 1].color.setHex(color);});
 			
-			var roofMesh = new THREE.Mesh( roofGeo, new THREE.MeshBasicMaterial( {	map :THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"), side:THREE.DoubleSide /*,vertexColors: THREE.FaceColors*/}));
-			
+			var roofMesh = new THREE.Mesh( roofGeo, new THREE.MeshBasicMaterial( {	side:THREE.DoubleSide ,vertexColors: THREE.FaceColors}));		
 			roofMesh.rotation.y = 45 * Math.PI / 180;
-			roofMesh.position.y = 90;
+			roofMesh.position.y = 100;
 			scene.add(roofMesh);
+			
+			
+			
 				var onKeyDown = function ( event ) {
 
 					switch ( event.keyCode ) {
@@ -318,10 +320,10 @@ var video = document.getElementById( 'myVideo' );
 
 				}*/
 
-				material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
+				//material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
 
-				mesh = new THREE.Mesh( geometry, material );
-				mesh.position = (0,0,0);
+				//mesh = new THREE.Mesh( geometry, material );
+				//mesh.position = (0,0,0);
 				//scene.add( mesh );
 
 				// objects
@@ -399,12 +401,21 @@ var video = document.getElementById( 'myVideo' );
 				//sphereIN.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
 				if(textureIN != undefined && textureIN != null){
 					var insidematerial;
-					//sphereIN = loadTexture(sphereIN);
+					
 					if (textureIN.indexOf("jpg")>-1){
 						insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });			
 						
 					}else if (textureIN.indexOf("mp4")>-1)
 					{
+						videoImage = document.createElement( 'canvas' );
+						videoImage.width = 300;
+						videoImage.height = 400;
+		
+						videoImageContext = videoImage.getContext( '2d' );
+						// background color if no video present
+						videoImageContext.fillStyle = '#000000';
+						videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+						
 						videoTexture = new THREE.Texture( video );
 						videoTexture.minFilter = THREE.LinearFilter;
 						videoTexture.magFilter = THREE.LinearFilter;
@@ -435,7 +446,7 @@ var video = document.getElementById( 'myVideo' );
 					var mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);	
 					mesh_outside.geometry.computeVertexNormals();
 					mesh_outside.position = pos;
-					scene.add(mesh_outside);
+					//scene.add(mesh_outside);
 				
 				
 				}
@@ -446,7 +457,7 @@ var video = document.getElementById( 'myVideo' );
 					sphereMesh.position = pos;
 					scene.add(sphereMesh);
 				}
-				return scene;
+				return mesh_outside;
 			}
        
 		function createBox(scene, pos, textureIN, textureOUT){
