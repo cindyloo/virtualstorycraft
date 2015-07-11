@@ -21,6 +21,13 @@ html, body {
 				
 				height:200px;
 	}
+	
+	#universe.container {
+				margin-left: auto;
+				margin-right: auto;
+				
+				height:500px;
+	}
 canvas:hover{
 transform: scale(1.2);
 	border: 5px solid red;

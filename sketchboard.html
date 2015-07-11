@@ -29,197 +29,69 @@
   
  <body>
  	<div class="container-fluid col-md-4">
-		<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r69/three.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r69/three.js"></script>
 				<script src="js/controls/OrbitControls.js"></script>
 	</head>
 	<body>
 	<div class="row-fluid">
-	<div id="box" class="col-md-4 container"></div>
+	<div id="universe" class="container"></div>
 	</div>
-	<div class="row-fluid">
-	<div id="sphere" class="col-md-4 container"></div>
-	</div>
-	<div class="row-fluid">
-	<div id="pyramid" class="col-md-4 container"></div>
-	</div>
-	<div class="row-fluid">
-	<div id="cylinder" class="col-md-4 container"></div>
+	
 	</div>
 		<script>
 			
-			var manualControl = false;
-			var longitude = 0;
-			var latitude = 0;
-			var savedX;
-			var savedY;
-			var savedLongitude;
-			var savedLatitude;
-			
-		
-	
-			
+
 			
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-
-			var apps = [];
-
-			init();
-			animate();
-
-			function init() {
-
+	
 				var w = 50;
 				var h = 50;
 
 				var fullWidth = w * 2;
 				var fullHeight = h * 2;
-
-				apps.push( new App( 'box', fullWidth, fullHeight, w * 0, h * 0, w, h ) );
-				apps.push( new App( 'sphere', fullWidth, fullHeight, w * 1, h * 0, w, h ) );
-				apps.push( new App( 'pyramid', fullWidth, fullHeight, w * 0, h * 1, w, h ) );
-				apps.push( new App( 'cylinder', fullWidth, fullHeight, w * 1, h * 1, w, h ) );
-
-			}
-
-			function animate() {
-
-				for ( var i = 0; i < apps.length; ++i ) {
-
-					apps[ i ].animate();
-
-				}
-
-				requestAnimationFrame( animate );
-
-			}
-
-			function App( containerId, fullWidth, fullHeight, viewX, viewY, viewWidth, viewHeight ) {
-
 				var container, stats;
 
 				var camera, scene, renderer;
 
-				var mesh, group1, group2, group3, light;
+				var mesh, light;
 
 				var mouseX = 0, mouseY = 0;
 
 				var windowHalfX = window.innerWidth / 2;
 				var windowHalfY = window.innerHeight / 2;
-
-				init();
-				
-				
-			function init() {
-	var position = {x:0, y:0, z:0};
-					container = document.getElementById( containerId );
-					container.height =100;
-					renderer = new THREE.WebGLRenderer( { antialias: true } );
+				var position = {x:0, y:0, z:0};
+					
+				scene = new THREE.Scene();
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
 					renderer.setClearColor( 0xffffff );
-					renderer.setSize( container.clientWidth, container.clientHeight );
+					renderer.setSize( window.innerWidth, window.innerHeight);
+
+					container = document.getElementById( "universe");
+					container.height =100;
 					container.appendChild( renderer.domElement );
+				
 	
 					camera = new THREE.PerspectiveCamera( 20, container.clientWidth / container.clientHeight, 1, 1000 );
-					//camera.setViewOffset( fullWidth, fullHeight, viewX, viewY, viewWidth, viewHeight );
-					camera.position.z = 400;
+					camera.target = new THREE.Vector3(0, 0, 0);
+					camera.position.set(0,150,340);
 
-					scene = new THREE.Scene();
-
-					var ambientLight = new THREE.AmbientLight(0x0000cc);
-      				scene.add(ambientLight);
-					light =	 new THREE.DirectionalLight( 0xffffff );
-					light.position.set( 1, 1, 1 ).normalize();
-					scene.add( light );
-
-					// shadow
-
-					var canvas = document.createElement( 'canvas' );
-					canvas.width = 100;
-					canvas.height = 100;
-
-					var context = canvas.getContext( '2d' );
-					var gradient = context.createRadialGradient( canvas.width / 2, canvas.height / 2, 0, canvas.width / 2, canvas.height / 2, canvas.width / 2 );
-					gradient.addColorStop( 0.1, 'rgba(210,210,210,1)' );
-					gradient.addColorStop( 1, 'rgba(255,255,255,1)' );
-
-					context.fillStyle = gradient;
-					context.fillRect( 0, 0, canvas.width, canvas.height );
-
-
-					var controls = new THREE.OrbitControls( camera, renderer.domElement );
-
-					// shadow
-
-		
-
-
-					context.fillStyle = gradient;
-					context.fillRect( 0, 0, canvas.width, canvas.height );
-
-					switch (containerId){
-						case "box": //"box":
-						
-						$("#box").append(createBox(scene, position));
-						$("#box canvas").click( function(elem){
-							$(".container").removeClass("selected");
-						 	$(this).addClass("selected");
-						 	camera.position.z = 500;
-						});
-						break;
-						case "sphere": //"box":
-						
-						$("#sphere").append(createSphere(scene, position));
-						$("#sphere").click( function(elem){
-							$(".container").removeClass("selected");
-						 	$(this).addClass("selected");
-						 	camera.position.z = 500;
-						});
-						break;
-						case "cylinder": //"box":
-						
-						$("#cylinder").append(createCylinder(scene, position));
-						$("#cylinder").click( function(elem){
-							$(".container").removeClass("selected");
-						 	$(this).addClass("selected");
-						 	camera.position.z = 500;
-						});
-						break;
-						case "pyramid":
-						
-						$("#pyramid").append(createPyramid(scene, position));
-						$("#pyramid").click( function(elem){
-							$(".container").removeClass("selected");
-						 	$(this).addClass("selected");
-						 	camera.position.z = 500;
-						
-						});
-						break;
-						
-					}
-
-					
-					
-
-					var faceIndices = [ 'a', 'b', 'c', 'd' ];
-
-					var color, f1, f2, f3, p, n, vertexIndex;
-
-						
-
-
-					var materials = [
-
-						new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } ),
-						new THREE.MeshBasicMaterial( { color: 0x000000, shading: THREE.FlatShading, wireframe: true, transparent: true } )
-
-					];
-
-
-					
-
-					document.addEventListener( 'mousemove', onDocumentMouseMove, false );
-
+	
+				scene.add(camera);
 				
-				}//init
+					var controls = new THREE.OrbitControls( camera, renderer.domElement );
+					
+					
+					scene = createBox(scene, position, "assets/stacy/texture-inside.jpg", "assets/stacy/texture-atlas.jpg")
+					//createSphere(scene, position, "assets/stacy/texture-inside.jpg", "assets/stacy/texture-atlas.jpg")
+						
+						//createCylinder(scene, position)
+						
+						//createPyramid(scene, position)
+	
+
+				animate();	
+
+
 
 				function onDocumentMouseMove( event ) {
 
@@ -227,58 +99,106 @@
 					mouseY = ( event.clientY - windowHalfY );
 
 				}
+			function onWindowResize() {
 
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				}    
 				//
 
-				this.animate = function() {
-
-					render();
-					//stats.update();
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+				controls.update();
+		
 
 				};
 
-				function render() {
-
-					//camera.position.x += ( mouseX - camera.position.x ) * 0.05;
-					//camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
-
-					camera.lookAt( scene.position );
+			function render() {
+					requestAnimationFrame( render );
 
 					renderer.render( scene, camera );
 
 				}
 
 
-			} //APp
-			
-			// listeners
-			document.addEventListener("mousedown", onDocumentMouseDown, false);
-			document.addEventListener("mousemove", onDocumentMouseMove, false);
-			document.addEventListener("mouseup", onDocumentMouseUp, false);
 			
         
-        function createSphere(scene, pos, texture){
-				var sphere = new THREE.SphereGeometry(50,50,50);
-				sphere.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
-				if(texture!= undefined){}
-				var sphereMaterial = new THREE.MeshLambertMaterial({color:"blue"});			
-				sphereMaterial.side =THREE.DoubleSide;
-				var sphereMesh = new THREE.Mesh(sphere, sphereMaterial);
-				sphereMesh.position.y = pos.y;
-				scene.add(sphereMesh);
-			
-				return sphere;
+        function createSphere(scene, pos, textureIN, textureOUT){
+				var sphereIN = new THREE.SphereGeometry(48,48,48);
+				var sphereOUT = new THREE.SphereGeometry(50,50,50);
+				sphereIN.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
+				if(textureIN != undefined && textureIN != null){
+				
+					//sphereIN = loadTexture(sphereIN);
+					var insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( "assets/stacy/texture-inside.jpg" ) });			
+					insidematerial.side = THREE.DoubleSide;
+					
+					var mesh_inside = new THREE.Mesh(sphereIN, insidematerial);	
+					scene.add(mesh_inside);
+					
+				}	
+				if(textureOUT != undefined && textureOUT != null){
+					
+					//sphereOUT = loadTexture(sphereOUT);
+					var atlasmaterial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });			
+					atlasmaterial.side = THREE.FrontSide;	
+					var mesh_outside = new THREE.Mesh(sphereOUT, atlasmaterial);	
+					mesh_outside.geometry.computeVertexNormals();
+					scene.add(mesh_outside);
+				
+				
+				}
+				if(textureOUT == null && textureOUT == null){
+					var sphereMaterial = new THREE.MeshLambertMaterial({color:"blue"});			
+					sphereMaterial.side =THREE.DoubleSide;
+					var sphereMesh = new THREE.Mesh(sphere, sphereMaterial);
+					sphereMesh.position.y = pos.y;
+					scene.add(sphereMesh);
+				}
+				
 			}
        
-		function createBox(scene, pos, texture){
-
-			var box = new THREE.BoxGeometry(50,50,50);		
-			var meshFaceMaterial1 = new THREE.MeshLambertMaterial({color:"red"} );//new THREE.MeshFaceMaterial( materialArray );
-			meshFaceMaterial1.side = THREE.DoubleSide;
-			var dh_mesh_inside = new THREE.Mesh(box, meshFaceMaterial1);
-			dh_mesh_inside.position.y = pos.y;
-			scene.add(dh_mesh_inside);
-			return box;
+		function createBox(scene, pos, textureIN, textureOUT){
+			var boxOUT = new THREE.BoxGeometry(50,50,50);					
+			var boxIN = new THREE.BoxGeometry(48,48,48);
+				
+				if(textureIN != undefined && textureIN != null){
+				
+					boxIN = loadTexture(boxIN);
+					var insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });
+					insidematerial.minFilter = THREE.LinearFilter;
+					insidematerial.magFilter = THREE.LinearFilter;
+					insidematerial.side = THREE.DoubleSide;
+					var mesh_inside = new THREE.Mesh(boxIN, insidematerial);	
+					scene.add(mesh_inside);
+					
+				}	
+				else if(textureOUT != undefined && textureOUT != null){
+					
+					boxOUT = loadTexture(boxOUT);
+					var atlasmaterial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });
+					atlasmaterial.minFilter = THREE.LinearFilter;
+					atlasmaterial.magFilter = THREE.LinearFilter;
+					atlasmaterial.side = THREE.DoubleSide;	
+					var mesh_outside = new THREE.Mesh(boxOUT, atlasmaterial);	
+					mesh_outside.geometry.computeVertexNormals();
+					scene.add(mesh_outside);
+				
+				
+				}
+				else {
+				var meshFaceMaterial1 = new THREE.MeshLambertMaterial({map:texture} );//new THREE.MeshFaceMaterial( materialArray );
+				meshFaceMaterial1.side = THREE.DoubleSide;
+				var dh_mesh_inside = new THREE.Mesh(box, meshFaceMaterial1);
+				dh_mesh_inside.position.y = pos.y;
+				scene.add(dh_mesh_inside);
+				}
+				
+				return scene;
+	
 		}
 		        
        	function createCylinder(scene, pos, texture){	
@@ -335,46 +255,11 @@
 				geo.faceVertexUvs[0][10] = [ bottom[0], bottom[1], bottom[3] ];
 				geo.faceVertexUvs[0][11] = [ bottom[1], bottom[2], bottom[3] ];
 			
-			return geo;
+				return geo;
             
             }
 
-			// when the mouse is pressed, we switch to manual control and save current coordinates
-			function onDocumentMouseDown(event){
-
-				event.preventDefault();
-
-				manualControl = true;
-
-				savedX = event.clientX;
-				savedY = event.clientY;
-
-				savedLongitude = longitude;
-				savedLatitude = latitude;
-
-			}
-
-			// when the mouse moves, if in manual contro we adjust coordinates
-			function onDocumentMouseMove(event){
-
-				if(manualControl){
-					longitude = (savedX - event.clientX) * 0.1 + savedLongitude;
-					latitude = (event.clientY - savedY) * 0.1 + savedLatitude;
-				}
-
-			}
-
-			// when the mouse is released, we turn manual control off
-			function onDocumentMouseUp(event){
-
-				manualControl = false;
-
-			}
 			
-			// pressing a key (actually releasing it) changes the texture map
-			document.onkeyup = function(event){
-						
-    	}
 			
 		</script>
 	</body>
