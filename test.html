@@ -59,7 +59,9 @@
 	</head>
 	<body>
 		<script src="js/three.min.js"></script>
+		<script src=http://mrdoob.github.io/three.js/examples/js/controls/FirstPersonControls.js></script>
 		<script src="js/controls/PointerLockControls.js"></script>
+		<script src="js/controls/DeviceOrientationControls.js"></script>
 <video id="myVideo" width="300" height="400" class="v" autobuffer style="">
              <source src="assets/test.mp4" type='video/mp4; '> 
 
@@ -176,6 +178,20 @@ var video = document.getElementById( 'myVideo' );
 
 			}
 
+			var hasOrientation = function(evt) {
+				if (!evt.alpha) {
+					return;
+				}
+
+				window.removeEventListener('deviceorientation', hasOrientation, false);
+				controls = new THREE.DeviceOrientationControls( camera );
+
+				controls.connect();
+				controls.movementSpeed = 100;
+				controls.rollSpeed = 0.05;
+
+			};
+
 			init();
 			
 			
@@ -184,7 +200,7 @@ var video = document.getElementById( 'myVideo' );
 
 			var controlsEnabled = false;
 
-			var moveForward = false;
+			var moveForward = true;
 			var moveBackward = false;
 			var moveLeft = false;
 			var moveRight = false;
@@ -290,8 +306,10 @@ var video = document.getElementById( 'myVideo' );
 
 				};
 
-				document.addEventListener( 'keydown', onKeyDown, false );
-				document.addEventListener( 'keyup', onKeyUp, false );
+				// document.addEventListener( 'keydown', onKeyDown, false );
+				// document.addEventListener( 'keyup', onKeyUp, false );
+				window.addEventListener('deviceorientation', hasOrientation, false);
+
 
 				raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
 
@@ -388,7 +406,7 @@ var video = document.getElementById( 'myVideo' );
 				//
 
 				window.addEventListener( 'resize', onWindowResize, false );
-
+				controls.moveForward = false;
 			}
 			
 			
@@ -560,6 +578,14 @@ function loadTexture(geo){
 			function animate() {
 
 				requestAnimationFrame( animate );
+
+				if ( controls.orientationQuaternion !== undefined ) {
+
+					if ( controls.gamma < 1 && controls.gamma > 0 ) { controls.autoForward = true; }
+					if ( controls.gamma > -1 && controls.gamma < 0 ) { controls.autoForward = false; }
+
+				}
+
 
 				if ( controlsEnabled ) {
 					raycaster.ray.origin.copy( controls.getObject().position );
