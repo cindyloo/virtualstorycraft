@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - controls - deviceorientation</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="user-scalable=no, initial-scale=1">
+		<style>
+			body {
+				margin: 0px;
+				background-color: #000000;
+				overflow: hidden;
+			}
+
+			#info {
+				position: absolute;
+				top: 0px; width: 100%;
+				color: #ffffff;
+				padding: 5px;
+				font-family:Monospace;
+				font-size:13px;
+				font-weight: bold;
+				text-align:center;
+			}
+
+			a {
+				color: #ff8800;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="container"></div>
+
+		<div id="info">
+			<a href="http://threejs.org" target="_blank">three.js</a> - equirectangular panorama demo with DeviceOrientation controls.
+			photo by <a href="assets/birds-a-flock-of-seagulls-john-harmon.jpg" target="_blank">Jón Ragnarsson</a>.
+		</div>
+
+		<script src="js/three.js"></script>
+		<script src="js/controls/DeviceOrientationControls.js"></script>
+		<script src="js/effects/StereoEffect.js"></script>
+		<script>
+			(function() {
+				  "use strict"
+					var container, camera, scene, renderer, controls, geometry, mesh, effect;
+
+				  window.addEventListener('load', function() {
+
+						
+						var animate = function(){
+
+							requestAnimationFrame( animate );
+
+							//controls.update();
+							//renderer.render(scene, camera);
+							render();
+						};
+						
+						var render = function(){
+
+							renderer.render( scene, camera )
+						};
+						var objects = [];
+						container = document.getElementById( 'container' );
+
+						camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
+
+						//controls = new THREE.DeviceOrientationControls( camera );
+
+
+			
+						scene = new THREE.Scene();
+
+						var geometry = new THREE.SphereGeometry( 500, 16, 8 );
+						geometry.applyMatrix( new THREE.Matrix4().makeScale( -1, 1, 1 ) );
+
+						var material = new THREE.MeshBasicMaterial( {
+							map: THREE.ImageUtils.loadTexture( 'assets/birds-a-flock-of-seagulls-john-harmon.jpg' )
+						} );
+
+						var mesh = new THREE.Mesh( geometry, material );
+						//scene.add( mesh );
+
+						var geometry = new THREE.BoxGeometry( 100, 100, 100, 4, 4, 4 );
+						var material = new THREE.MeshBasicMaterial( { color: 0xff00ff, side: THREE.BackSide, wireframe: true } );
+						var mesh = new THREE.Mesh( geometry, material );
+						scene.add( mesh );
+
+
+
+
+for ( var i = 0; i < 10; i ++ ) {
+					/*var colorA = Math.random() ;
+					var colorB = Math.random() ;
+					var colorC = Math.random() ;
+					material = new THREE.MeshLambertMaterial( { specular: 0xffffff, shading: THREE.FlatShading, color: Math.random() } );
+
+					var mesh = new THREE.Mesh( geometry, material );
+					mesh.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+					mesh.position.y = Math.floor( Math.random() * 20 ) * 90 + 10;
+					mesh.position.z = Math.floor( Math.random() * 20 - 10 ) * 90;
+					scene.add( mesh );*/
+
+					var textureIN = "assets/beat_hotel_tex_outside.jpg";
+					var textureOUT = "assets/beat_hotel.jpg";
+					var sphereIN = new THREE.SphereGeometry(48,48,48);
+					var sphereOUT = new THREE.SphereGeometry(50,50,50);
+					var insidematerial, outsidematerial;
+					insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });			
+					insidematerial.side = THREE.DoubleSide;
+					outsidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });			
+					outsidematerial.side = THREE.DoubleSide;
+					var mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+					mesh_inside.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+					mesh_inside.position.y = Math.floor( Math.random() * 20 ) * 10 + 10;
+					mesh_inside.position.z = Math.floor( Math.random() * 20 - 10 ) * 90;
+					var mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+					mesh_outside.position= mesh_inside.position;
+					scene.add(mesh_inside);
+					scene.add(mesh_outside);
+					
+					textureIN = "assets/beat_hotel_tex_outside.jpg";
+					textureOUT = "assets/jack/texture-atlas.jpg";
+					var sphereIN = new THREE.SphereGeometry(48,48,48);
+					var sphereOUT = new THREE.SphereGeometry(50,50,50);
+					var insidematerial, outsidematerial;
+					insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });			
+					insidematerial.side = THREE.DoubleSide;
+					outsidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });			
+					outsidematerial.side = THREE.DoubleSide;
+					var mesh_inside3 = new THREE.Mesh(sphereIN, insidematerial);
+					mesh_inside3.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+					mesh_inside3.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
+					mesh_inside3.position.z = Math.floor( Math.random() * 20 - 10 ) * 90;
+					var mesh_outside3 = new THREE.Mesh(sphereOUT, outsidematerial);
+					mesh_outside3.position= mesh_inside3.position;
+					scene.add(mesh_inside3);
+					scene.add(mesh_outside3);
+					
+					
+					var boxOUT = new THREE.BoxGeometry(50,50,50);					
+					var boxIN = new THREE.BoxGeometry(48,48,48);		
+					textureIN = "assets/stacy/texture-inside.jpg";
+					textureOUT = "assets/jack/texture-atlas.jpg";			
+					boxIN = loadTexture(boxIN);
+					var insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });
+					insidematerial.minFilter = THREE.LinearFilter;
+					insidematerial.magFilter = THREE.LinearFilter;
+					insidematerial.side = THREE.DoubleSide;
+					var mesh_inside2 = new THREE.Mesh(boxIN, insidematerial);
+					mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+					mesh_inside2.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
+					mesh_inside2.position.z = Math.floor( Math.random() * 20 - 10 ) * 90;
+					scene.add(mesh_inside2);					
+					boxOUT = loadTexture(boxOUT);
+					var atlasmaterial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });
+					atlasmaterial.minFilter = THREE.LinearFilter;
+					atlasmaterial.magFilter = THREE.LinearFilter;
+					atlasmaterial.side = THREE.DoubleSide;	
+					var mesh_outside2 = new THREE.Mesh(boxOUT, atlasmaterial);
+					mesh_outside2.position= mesh_inside2.position;
+					scene.add(mesh_outside2);
+				
+				
+			
+
+					var roofGeo = new THREE.CylinderGeometry(0, 100, 100, 4, false); 		
+					var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+					faceColors.forEach( function(color, idx) 
+						{ roofGeo.faces[2 * idx + 1].color.setHex(color);});
+			
+					var roofMesh = new THREE.Mesh( roofGeo, new THREE.MeshBasicMaterial( {	map :THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"), side:THREE.DoubleSide, colors: Math.random()}));
+			
+					roofMesh.rotation.y = 45 * Math.PI / 180;
+					roofMesh.position.x = mesh_outside.position.x;
+					roofMesh.position.z = mesh_outside.position.z; 
+					
+					roofMesh.position.y = mesh_outside.position.y + 100;
+					//scene.add(roofMesh);
+
+
+					//material.color.setHSL( colorA, colorB, colorC );
+
+					objects.push( mesh );
+					//objects.push(roofMesh);
+					objects.push( mesh_inside );
+					objects.push( mesh_outside );
+					objects.push( mesh_inside2 );
+					objects.push( mesh_outside2 );
+
+				}//for
+
+
+
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.domElement.style.position = 'absolute';
+				renderer.domElement.style.top = 0;
+				container.appendChild(renderer.domElement);
+
+
+
+				renderer = new THREE.StereoEffect( renderer );
+				renderer.eyeSeparation = 10;
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				
+				
+				window.addEventListener('resize', function() {
+
+							camera.aspect = window.innerWidth / window.innerHeight;
+							camera.updateProjectionMatrix();
+							renderer.setSize( window.innerWidth, window.innerHeight );
+							
+
+						}, false);
+
+				animate();
+						
+						
+						function loadTexture(geo){
+					
+						var front = [new THREE.Vector2(0, .666), new THREE.Vector2(.5, .666), new THREE.Vector2(.5, 1), new THREE.Vector2(0, 1)];
+						var back =  [new THREE.Vector2(.5, .666), new THREE.Vector2(1, .666), new THREE.Vector2(1, 1), new THREE.Vector2(.5, 1)];
+						var sideR = [new THREE.Vector2(0, .333), new THREE.Vector2(.5, .333), new THREE.Vector2(.5, .666), new THREE.Vector2(0, .666)];
+						var sideL = [new THREE.Vector2(.5, .333), new THREE.Vector2(1, .333), new THREE.Vector2(1, .666), new THREE.Vector2(.5, .666)];
+						var top	 =  [new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0, .333)];
+						var bottom =[new THREE.Vector2(.5, 0), new THREE.Vector2(1, 0), new THREE.Vector2(1, .333), new THREE.Vector2(.5, .333)];
+						
+						geo.faceVertexUvs[0] = [];
+						
+						geo.faceVertexUvs[0][0] = [ front[0], front[1], front[3] ];
+						geo.faceVertexUvs[0][1] = [ front[1], front[2], front[3] ];
+						  
+						geo.faceVertexUvs[0][2] = [ back[0], back[1], back[3] ];
+						geo.faceVertexUvs[0][3] = [ back[1], back[2], back[3] ];
+						  
+						geo.faceVertexUvs[0][4] = [ sideR[0], sideR[1], sideR[3] ];
+						geo.faceVertexUvs[0][5] = [ sideR[1], sideR[2], sideR[3] ];
+						  
+						geo.faceVertexUvs[0][6] = [ sideL[0], sideL[1], sideL[3] ];
+						geo.faceVertexUvs[0][7] = [ sideL[1], sideL[2], sideL[3] ];
+						  
+						geo.faceVertexUvs[0][8] = [ new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(0,.333) ];
+						geo.faceVertexUvs[0][9] = [ new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0,.333)];
+						  
+						geo.faceVertexUvs[0][10] = [ bottom[0], bottom[1], bottom[3] ];
+						geo.faceVertexUvs[0][11] = [ bottom[1], bottom[2], bottom[3] ];
+					
+						return geo;
+					
+					}
+
+				  }, false);
+
+			})();
+		</script>
+
+	</body>
+</html>
+

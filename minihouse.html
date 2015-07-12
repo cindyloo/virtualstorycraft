@@ -1,0 +1,625 @@
+<html>
+	<head>
+		<style>
+			body{
+				margin: 0;
+			}
+			canvas{
+				width: 100%;
+				height: 100%
+			}
+		</style>
+<script src="js/three.min.js"></script>
+		
+		
+		<script src="js/controls/PointerLockControls.js"></script>
+		<script src="fonts/droid/droid_serif_bold.typeface.js"></script>
+		<script src='js/threex.text.js'></script>
+
+
+	<body>
+
+ 		<div id="dataContainerOrientation">
+      No device orientation data
+    </div>
+    <div id="dataContainerMotion">
+      No device motion data
+    </div>	
+    
+    <div id="blocker">
+
+			<div id="instructions">
+				<span style="font-size:40px">Click to play</span>
+				<br />
+				(W, A, S, D = Move, SPACE = Jump, MOUSE = Look around)
+			</div>
+
+		</div>
+ <video id="myVideo" width="300" height="400" class="v" autobuffer style="display:none;">
+             <source src="" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'> 
+
+
+</video>
+	
+		<script>
+		
+			var manualControl = false;
+			var longitude = 0;
+			var latitude = 0;
+			var savedX;
+			var savedY;
+			var savedLongitude;
+			var savedLatitude;
+			var controls;
+			
+
+	 		var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+			var VIEW_ANGLE = 50, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 1, FAR = 1000;
+			var camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+			
+				var controlsEnabled = false;
+			var moveForward = false;
+			var moveBackward = false;
+			var moveLeft = false;
+			var moveRight = false;
+			var prevTime = performance.now();
+			var velocity = new THREE.Vector3();          
+          
+			var clock = new THREE.Clock();
+			var objects = [];
+			var raycaster;
+			//initOrientation();
+			
+			var scene, renderer, video;
+			
+			// panoramas background
+			var panoramasArray = ["01.jpg","02.jpg","03.jpg"];
+			var panoramaNumber = Math.floor(Math.random()*panoramasArray.length);
+
+			// setting up the renderer
+		
+
+			  
+            initControls();	
+            
+            //initCamera()
+
+			// creating a new scene
+				// SCENE
+			scene = new THREE.Scene();
+			
+			// CAMERA
+			
+			camera.target = new THREE.Vector3(0, 0, 0);
+			camera.position.set(3000,150,3400);
+			//camera.lookAt(scene.position);	
+			var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
+				light.position.set( 0.5, 1, 0.75 );
+				scene.add( light );
+			//scene.add(camera);
+            loadVideo();
+            
+            
+            setupControlKeys(scene, camera);
+            
+            var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+			renderer.setClearColor( 0xffffff );
+			window.addEventListener( 'resize', onWindowResize, false );
+			var container = document.createElement('div');
+		    document.body.appendChild( container );
+			container.appendChild( renderer.domElement );
+            
+            
+              render();
+
+			var dh_house_in = new THREE.BoxGeometry(950, 950, 950);
+			dh_house_in = loadTexture(dh_house_in);
+			var meshFaceMaterial1 = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'texture-inside.jpg' ) });//new THREE.MeshFaceMaterial( materialArray );
+			meshFaceMaterial1.minFilter = THREE.LinearFilter;
+			meshFaceMaterial1.magFilter = THREE.LinearFilter;
+			meshFaceMaterial1.side = THREE.BackSide;
+			var dh_mesh_inside = new THREE.Mesh(dh_house_in, meshFaceMaterial1);
+			//dh_mesh_inside.position.x = 700;
+			scene.add(dh_mesh_inside);
+			
+			var dh_house_out = new THREE.BoxGeometry(1000, 1000, 1000);			
+			dh_house_out = loadTexture(dh_house_out);
+			var atlasmaterial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'texture-atlas.jpg' ) });
+			atlasmaterial.minFilter = THREE.LinearFilter;
+			atlasmaterial.magFilter = THREE.LinearFilter;
+			atlasmaterial.side = THREE.FrontSide;
+			
+			var dh_mesh_outside = new THREE.Mesh(dh_house_out, atlasmaterial);	
+			dh_mesh_outside.geometry.computeVertexNormals();
+			scene.add(dh_mesh_outside);
+			
+			var roofGeo = new THREE.CylinderGeometry(0, 900, 900, 4, false); 		
+			var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+			faceColors.forEach( function(color, idx) 
+				{ roofGeo.faces[2 * idx + 1].color.setHex(color);});
+			
+			var roofMesh = new THREE.Mesh( roofGeo, new THREE.MeshBasicMaterial( {	map :THREE.ImageUtils.loadTexture("dh_roof_texture.jpg"), side:THREE.DoubleSide /*,vertexColors: THREE.FaceColors*/}));
+			
+			roofMesh.rotation.y = 45 * Math.PI / 180;
+			roofMesh.position.y = 950;
+			scene.add(roofMesh);
+
+
+			var textgeo    = new THREE.TextGeometry('House of Souls', {
+				font        : "droid serif",
+				weight      : "bold",
+				size        : 1,
+				height      : 0.4,
+			})
+			
+			var material	= new THREE.MeshNormalMaterial()
+				var mesh	= new THREE.Mesh(textgeo, material)
+				mesh.position.y = 1000
+			scene.add(mesh);
+			///////////
+			// VIDEO //
+//TEST THIS ASAP IN IOS
+
+			/*document.addEventListener("mousedown", onDocumentMouseDown, false);
+			document.addEventListener("mousemove", onDocumentMouseMove, false);
+			document.addEventListener("mouseup", onDocumentMouseUp, false);*/
+				
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+}            
+
+		 function loadVideo(){
+		 
+		 
+
+			video = document.getElementById( 'myVideo' );
+			
+			videoImage = document.createElement( 'canvas' );
+			videoImage.width = 300;
+			videoImage.height = 400;
+		
+			videoImageContext = videoImage.getContext( '2d' );
+			// background color if no video present
+			videoImageContext.fillStyle = '#000000';
+			videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+		
+			videoTexture = new THREE.Texture( video );
+			videoTexture.minFilter = THREE.LinearFilter;
+			videoTexture.magFilter = THREE.LinearFilter;
+			
+
+			//var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture,overdraw: true, side:THREE.DoubleSide, color:'blue' } );
+			
+
+			var shard = new THREE.Shape();
+			shard.moveTo(0,0);
+			shard.lineTo(1,0);
+			shard.lineTo(1,1);
+			shard.lineTo(0,.75);
+			shard.lineTo(0,0);
+			var shardgeo1 = new THREE.ShapeGeometry(shard);
+			var shard2 = new THREE.Shape();
+			shard2.moveTo(0,0);
+			shard2.lineTo(.2,0);
+			shard2.lineTo(.2,.75);
+			shard2.lineTo(0,.95);
+			shard2.lineTo(0,0);
+			var shardgeo2 = new THREE.ShapeGeometry(shard2);
+			var shard3 = new THREE.Shape();
+			shard3.moveTo(.2,0);
+			shard3.lineTo(.4,0);
+			shard3.lineTo(.2,1);
+			shard3.lineTo(0,.5);
+			shard3.lineTo(.2,0);
+			var shardgeo3 = new THREE.ShapeGeometry(shard3);
+			var shard4 = new THREE.Shape();
+			shard4.moveTo(0,0);
+			shard4.lineTo(.6,0);
+			shard4.lineTo(.7,.5);
+			shard4.lineTo(.2,.6);
+			shard4.lineTo(.1,0);
+			var shardgeo4 = new THREE.ShapeGeometry(shard4);
+
+		
+		/*
+		var geometry2 = new THREE.PlaneGeometry( 100, 100 );
+		var shardFace = [new THREE.Vector2(0, 0), new THREE.Vector2(1, 0), new THREE.Vector2(1, 1), new THREE.Vector2(0,1)];
+		geometry2.faceVertexUvs[0][0] = [ shardFace[0], shardFace[1], shardFace[3] ];
+		geometry2.faceVertexUvs[0][1] = [ shardFace[1], shardFace[2], shardFace[3] ];
+		*/
+
+		
+		//var shardmesh1 = new THREE.Mesh(shardgeo1, movieMaterial);
+		//shardmesh1.scale.set( 250, 250, 250)	;
+		/*
+		var shardmesh2 = new THREE.Mesh( shardgeo2, movieMaterial );
+		shardmesh2.scale.set( 200, 200, 200)	;
+		var shardmesh3 = new THREE.Mesh( shardgeo3, movieMaterial );
+		shardmesh3.scale.set( 200, 300, 200)	;	 
+		var shardmesh4 = new THREE.Mesh( shardgeo4, movieMaterial );
+		shardmesh4.scale.set( 200, 300, 200)	;
+
+		
+		shardmesh2.position.set(0,-20,20);
+		scene.add(shardmesh2);
+		shardmesh3.position.set(-100,0,30);
+		scene.add(shardmesh3);
+		shardmesh4.position.set(100,0,40);
+		scene.add(shardmesh4);
+		*/
+		//shardmesh1.position.set(-100,0,0);
+		//scene.add(shardmesh1);
+		 
+		 
+		 }
+            
+            function loadTexture(geo){
+            
+				var front = [new THREE.Vector2(0, .666), new THREE.Vector2(.5, .666), new THREE.Vector2(.5, 1), new THREE.Vector2(0, 1)];
+				var back =  [new THREE.Vector2(.5, .666), new THREE.Vector2(1, .666), new THREE.Vector2(1, 1), new THREE.Vector2(.5, 1)];
+				var sideR = [new THREE.Vector2(0, .333), new THREE.Vector2(.5, .333), new THREE.Vector2(.5, .666), new THREE.Vector2(0, .666)];
+				var sideL = [new THREE.Vector2(.5, .333), new THREE.Vector2(1, .333), new THREE.Vector2(1, .666), new THREE.Vector2(.5, .666)];
+				var top	 =  [new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0, .333)];
+				var bottom =[new THREE.Vector2(.5, 0), new THREE.Vector2(1, 0), new THREE.Vector2(1, .333), new THREE.Vector2(.5, .333)];
+				
+				geo.faceVertexUvs[0] = [];
+				
+				geo.faceVertexUvs[0][0] = [ front[0], front[1], front[3] ];
+				geo.faceVertexUvs[0][1] = [ front[1], front[2], front[3] ];
+				  
+				geo.faceVertexUvs[0][2] = [ back[0], back[1], back[3] ];
+				geo.faceVertexUvs[0][3] = [ back[1], back[2], back[3] ];
+				  
+				geo.faceVertexUvs[0][4] = [ sideR[0], sideR[1], sideR[3] ];
+				geo.faceVertexUvs[0][5] = [ sideR[1], sideR[2], sideR[3] ];
+				  
+				geo.faceVertexUvs[0][6] = [ sideL[0], sideL[1], sideL[3] ];
+				geo.faceVertexUvs[0][7] = [ sideL[1], sideL[2], sideL[3] ];
+				  
+				geo.faceVertexUvs[0][8] = [ new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(0,.333) ];
+				geo.faceVertexUvs[0][9] = [ new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0,.333)];
+				  
+				geo.faceVertexUvs[0][10] = [ bottom[0], bottom[1], bottom[3] ];
+				geo.faceVertexUvs[0][11] = [ bottom[1], bottom[2], bottom[3] ];
+			
+			return geo;
+            
+            }
+             
+            function render(){
+				
+				requestAnimationFrame(render);
+				if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
+				{
+					videoImageContext.drawImage( video, 0, 0 );
+					if ( videoTexture ) 
+						videoTexture.needsUpdate = true;
+				}
+				if(!manualControl){
+					longitude += 0.1;
+				}
+
+				// limiting latitude from -85 to 85 (cannot point to the sky or under your feet)
+                    latitude = Math.max(-85, Math.min(85, latitude));
+
+				// moving the camera according to current latitude (vertical movement) and longitude (horizontal movement)
+				//camera.target.x = 1 * Math.sin(THREE.Math.degToRad(90 - latitude)) * Math.cos(THREE.Math.degToRad(longitude));
+				//camera.target.y = 10 * Math.cos(THREE.Math.degToRad(90 - latitude));
+				//camera.target.z = 400 * Math.sin(THREE.Math.degToRad(90 - latitude)) * Math.sin(THREE.Math.degToRad(longitude));
+				//camera.lookAt(camera.target);
+
+				// calling again render function
+			
+				animate();
+			}
+			
+			
+			function animate() {
+				requestAnimationFrame( animate );
+				if ( controlsEnabled ) {
+					raycaster.ray.origin.copy( controls.getObject().position );
+					raycaster.ray.origin.y -= 10;
+					var intersections = raycaster.intersectObjects( objects );
+					var isOnObject = intersections.length > 0;
+					var time = performance.now();
+					var delta = ( time - prevTime ) / 1000;
+					velocity.x -= velocity.x * 10.0 * delta;
+					velocity.z -= velocity.z * 10.0 * delta;
+					velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+					if ( moveForward ) velocity.z -= 400.0 * delta;
+					if ( moveBackward ) velocity.z += 400.0 * delta;
+					if ( moveLeft ) velocity.x -= 400.0 * delta;
+					if ( moveRight ) velocity.x += 400.0 * delta;
+					if ( isOnObject === true ) {
+						velocity.y = Math.max( 0, velocity.y );
+						canJump = true;
+					}
+					controls.getObject().translateX( velocity.x * delta );
+					controls.getObject().translateY( velocity.y * delta );
+					controls.getObject().translateZ( velocity.z * delta );
+					if ( controls.getObject().position.y < 10 ) {
+						velocity.y = 0;
+						controls.getObject().position.y = 10;
+						canJump = true;
+					}
+					prevTime = time;
+				}
+				renderer.render( scene, camera );
+			}
+
+			
+			// when the mouse is pressed, we switch to manual control and save current coordinates
+			function onDocumentMouseDown(event){
+
+				event.preventDefault();
+
+				manualControl = true;
+
+				savedX = event.clientX;
+				savedY = event.clientY;
+
+				savedLongitude = longitude;
+				savedLatitude = latitude;
+
+			}
+
+			// when the mouse moves, if in manual contro we adjust coordinates
+			function onDocumentMouseMove(event){
+
+				if(manualControl){
+					longitude = (savedX - event.clientX) * 0.1 + savedLongitude;
+					latitude = (event.clientY - savedY) * 0.1 + savedLatitude;
+				}
+
+			}
+
+			// when the mouse is released, we turn manual control off
+			function onDocumentMouseUp(event){
+
+				manualControl = false;
+
+			}
+			
+			// pressing a key (actually releasing it) changes the texture map
+			document.onkeyup = function(event){
+			
+			}	
+		function initOrientation(){
+		 /* var dataContainerOrientation = document.getElementById('dataContainerOrientation');
+		  var dataContainerMotion = document.getElementById('dataContainerMotion');
+	 
+		  //Check for support for DeviceOrientation event
+		  if(window.DeviceOrientationEvent) {
+			window.addEventListener('deviceorientation', function(event) {
+					var alpha = event.alpha;
+					var beta = event.beta;
+					var gamma = event.gamma;
+	 
+					if(alpha!=null || beta!=null || gamma!=null) 
+					  dataContainerOrientation.innerHTML = 'alpha: ' + alpha + '<br/>beta: ' + beta + '<br />gamma: ' + gamma;
+				  }, false);
+		  }
+	 
+		  // Check for support for DeviceMotion events
+		  if(window.DeviceMotionEvent) {
+		  window.addEventListener('devicemotion', function(event) {
+					var x = event.accelerationIncludingGravity.x;
+					var y = event.accelerationIncludingGravity.y;
+					var z = event.accelerationIncludingGravity.z;
+					var r = event.rotationRate;
+					var html = 'Acceleration:<br />';
+					html += 'x: ' + x +'<br />y: ' + y + '<br/>z: ' + z+ '<br />';
+					html += 'Rotation rate:<br />';
+					if(r!=null) html += 'alpha: ' + r.alpha +'<br />beta: ' + r.beta + '<br/>gamma: ' + r.gamma + '<br />';
+					dataContainerMotion.innerHTML = html;                  
+				  });
+		  }
+			
+	*/	
+	}
+	
+	 function initCamera(){
+	 
+	 
+	 		
+			document.body.appendChild( container );
+			container.appendChild( renderer.domElement );
+			// creating a new scene
+				// SCENE
+			scene = new THREE.Scene();
+			
+			// CAMERA
+			
+			camera.target = new THREE.Vector3(0, 0, 0);
+
+			camera.position.set(3000,150,3400);
+			//camera.lookAt(scene.position);	
+			
+			scene.add(camera);
+			
+	 
+    }
+    	function initControls(){
+
+			var blocker = document.getElementById( 'blocker' );
+			var instructions = document.getElementById( 'instructions' );
+			// http://www.html5rocks.com/en/tutorials/pointerlock/intro/
+			
+            var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
+			if ( havePointerLock ) {
+				var element = document.body;
+				var pointerlockchange = function ( event ) {
+					if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
+						controlsEnabled = true;
+						controls.enabled = true;
+						blocker.style.display = 'none';
+					} else {
+						controls.enabled = false;
+						blocker.style.display = '-webkit-box';
+						blocker.style.display = '-moz-box';
+						blocker.style.display = 'box';
+						instructions.style.display = '';
+					}
+				}
+				var pointerlockerror = function ( event ) {
+					instructions.style.display = '';
+				}
+				// Hook pointer lock state change events
+				document.addEventListener( 'pointerlockchange', pointerlockchange, false );
+				document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
+				document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
+				document.addEventListener( 'pointerlockerror', pointerlockerror, false );
+				document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
+				document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
+				instructions.addEventListener( 'click', function ( event ) {
+					instructions.style.display = 'none';
+					// Ask the browser to lock the pointer
+					element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+					if ( /Firefox/i.test( navigator.userAgent ) ) {
+						var fullscreenchange = function ( event ) {
+							if ( document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element ) {
+								document.removeEventListener( 'fullscreenchange', fullscreenchange );
+								document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
+								element.requestPointerLock();
+							}
+						}
+						document.addEventListener( 'fullscreenchange', fullscreenchange, false );
+						document.addEventListener( 'mozfullscreenchange', fullscreenchange, false );
+						element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
+						element.requestFullscreen();
+					} else {
+						element.requestPointerLock();
+					}
+				}, false );
+			} else {
+				instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
+			}			
+		}
+		
+		
+		function setupControlKeys(scene, camera){
+			
+				var light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
+				light.position.set( 0.5, 1, 0.75 );
+				scene.add( light );
+
+				controls = new THREE.PointerLockControls( camera );
+				scene.add( controls.getObject() );
+
+				var onKeyDown = function ( event ) {
+					switch ( event.keyCode ) {
+						case 38: // up
+						case 87: // w
+							moveForward = true;
+							break;
+						case 37: // left
+						case 65: // a
+							moveLeft = true; break;
+						case 40: // down
+						case 83: // s
+							moveBackward = true;
+							break;
+						case 39: // right
+						case 68: // d
+							moveRight = true;
+							break;
+						case 32: // space
+							if ( canJump === true ) velocity.y += 350;
+							canJump = false;
+							break;
+					}
+				};
+				var onKeyUp = function ( event ) {
+					switch( event.keyCode ) {
+						case 38: // up
+						case 87: // w
+							moveForward = false;
+							break;
+						case 37: // left
+						case 65: // a
+							moveLeft = false;
+							break;
+						case 40: // down
+						case 83: // s
+							moveBackward = false;
+							break;
+						case 39: // right
+						case 68: // d
+							moveRight = false;
+							break;
+					}
+				};
+				document.addEventListener( 'keydown', onKeyDown, false );
+				document.addEventListener( 'keyup', onKeyUp, false );
+
+			raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
+			geometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
+				geometry.applyMatrix( new THREE.Matrix4().makeRotationX( - Math.PI / 2 ) );
+
+				for ( var i = 0, l = geometry.vertices.length; i < l; i ++ ) {
+
+					var vertex = geometry.vertices[ i ];
+					vertex.x += Math.random() * 20 - 10;
+					vertex.y += Math.random() * 2;
+					vertex.z += Math.random() * 20 - 10;
+
+				}
+
+				for ( var i = 0, l = geometry.faces.length; i < l; i ++ ) {
+
+					var face = geometry.faces[ i ];
+					face.vertexColors[ 0 ] = new THREE.Color().setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+					face.vertexColors[ 1 ] = new THREE.Color().setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+					face.vertexColors[ 2 ] = new THREE.Color().setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+
+				}
+
+				material = new THREE.MeshBasicMaterial( { vertexColors: THREE.VertexColors } );
+
+				mesh = new THREE.Mesh( geometry, material );
+				scene.add( mesh );
+
+				// objects
+
+				geometry = new THREE.BoxGeometry( 20, 20, 20 );
+
+				for ( var i = 0, l = geometry.faces.length; i < l; i ++ ) {
+
+					var face = geometry.faces[ i ];
+					face.vertexColors[ 0 ] = new THREE.Color().setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+					face.vertexColors[ 1 ] = new THREE.Color().setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+					face.vertexColors[ 2 ] = new THREE.Color().setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+
+				}
+
+				for ( var i = 0; i < 500; i ++ ) {
+
+					material = new THREE.MeshPhongMaterial( { specular: 0xffffff, shading: THREE.FlatShading, vertexColors: THREE.VertexColors } );
+
+					var mesh = new THREE.Mesh( geometry, material );
+					mesh.position.x = Math.floor( Math.random() * 20 - 10 ) * 20;
+					mesh.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
+					mesh.position.z = Math.floor( Math.random() * 20 - 10 ) * 20;
+					scene.add( mesh );
+
+					material.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
+
+					objects.push( mesh );
+
+				}
+
+
+
+			}
+		
+		</script>
+		
+
+	</body>
+</html>
