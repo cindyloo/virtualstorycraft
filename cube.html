@@ -105,8 +105,14 @@ canvas {width:100px;height:100px}
 			
 			scene.add(camera);
 			var controls = new THREE.OrbitControls( camera, renderer.domElement );
-
+			position.y = 100;
 			$("#box").append(createBox(position));
+			position.y = 0;
+			$("#sphere").append(createSphere(position));
+			position.y = -100;
+			$("#pyramid").append(createPyramid(position));
+			position.y = -200;
+			$("#cylinder").append(createCylinder(position));
 
 			// listeners
 			document.addEventListener("mousedown", onDocumentMouseDown, false);
@@ -124,7 +130,7 @@ canvas {width:100px;height:100px}
 				var sphereMaterial = new THREE.MeshBasicMaterial({color:"blue"});			
 				sphereMaterial.side =THREE.DoubleSide;
 				var sphereMesh = new THREE.Mesh(sphere, sphereMaterial);
-				sphereMesh.position.y = position.y;
+				sphereMesh.position.y = pos.y;
 				scene.add(sphereMesh);
 			
 				return sphere;
@@ -136,7 +142,7 @@ canvas {width:100px;height:100px}
 			var meshFaceMaterial1 = new THREE.MeshBasicMaterial({color:"red"} );//new THREE.MeshFaceMaterial( materialArray );
 			meshFaceMaterial1.side = THREE.DoubleSide;
 			var dh_mesh_inside = new THREE.Mesh(box, meshFaceMaterial1);
-			meshFaceMaterial1.position = position;
+			dh_mesh_inside.position.y = pos.y;
 			scene.add(dh_mesh_inside);
 		return box;
 		}
@@ -145,7 +151,7 @@ canvas {width:100px;height:100px}
 			var cylinder = new THREE.CylinderGeometry(50, 50, 100, 100, false); 		
 			var cylinderMesh = new THREE.Mesh( cylinder, new THREE.MeshBasicMaterial( {	color:"yellow",side:THREE.DoubleSide}))	;//,vertexColors: THREE.FaceColors}));	
 			cylinderMesh.rotation.y = 45 * Math.PI / 180;
-			cylinderMesh.position.y= position.y;
+			cylinderMesh.position.y= pos.y;
 			scene.add(cylinderMesh);
 			return cylinder
 		}    
@@ -157,7 +163,7 @@ canvas {width:100px;height:100px}
 				{ pyramid.faces[2 * idx + 1].color.setHex(color);});	
 			var pyramidMesh = new THREE.Mesh( pyramid, new THREE.MeshBasicMaterial( {	vertexColors: THREE.FaceColors,side:THREE.DoubleSide}))	;//,vertexColors: THREE.FaceColors}));		
 			//pyramidMesh.rotation.y = 45 * Math.PI / 180;
-			pyramidMesh.position.y = position.y;
+			pyramidMesh.position.y = pos.y;
 			scene.add(pyramidMesh);
 		}
                function loadTexture(geo){

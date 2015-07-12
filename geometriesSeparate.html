@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="icon" href="../../favicon.ico">
+   
+    <title>Narratopia:Choose Your Shape<title>
+
+    <!-- Bootstrap theme -->
+   
+
+    <script src="js/jquery-2.1.3.js"></script>
+	
+	<script src="js/Detector.js"></script>
+ <style>
+ html, body {
+				color: #808080;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+
+				background-color: #fff;
+				margin: 0px;
+				overflow: hidden;
+				width: 100%;
+				height: 100%;
+			}
+
+			
+
+
+
+	.container {
+				margin-left: auto;
+				margin-right: auto;
+				margin-bottom:50px;	
+				height:400px;
+	}	
+
+		a#next {font-size: 16px;}	
+
+ </style>
+  </head>
+  
+ <body>
+ 	<div class="container-fluid ">
+		<script src="//cdnjs.cloudflare.com/ajax/libs/three.js/r69/three.min.js"></script>
+				<script src="js/controls/OrbitControls.js"></script>
+	</head>
+	<body>
+	<h2> CHOOSE YOUR SHAPE </h2><div class="row-fluid">
+	<div id="box" class="container"></div>
+	</div>
+	<div class="row-fluid">
+	<div id="sphere" class="container"></div>
+	</div>
+	<div class="row-fluid">
+	<div id="pyramid" class=" container"></div>
+	</div>
+	<div class="row-fluid">
+	<div id="cylinder" class="container"></div>
+	</div>
+	<div class="">
+	<a id="prev" type="button"/><img src="assets/leftarrow.png"  width="100px"></a>
+	
+	<a id="next" type="button"/><img src="assets/arrow.png" width="100px"></a>
+	</div>
+		<script>
+			
+			var manualControl = false;
+			var longitude = 0;
+			var latitude = 0;
+			var savedX;
+			var savedY;
+			var savedLongitude;
+			var savedLatitude;
+			var iterator =0;
+		
+	
+			
+			
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+			var apps = [];
+			$("#next").click(function(){	
+				if (iterator == 3)
+					iterator = 0;
+				else
+					iterator++;	
+			});
+			$("#prev").click(function(){	
+				if (iterator ==0)
+					iterator = 3;
+				else 
+					iterator--;	
+			});
+			init();
+			animate();
+			function init() {
+				var w = 50;
+				var h = 50;
+				var fullWidth = w * 2;
+				var fullHeight = h * 2;
+				apps.push( new App( 'box', fullWidth, fullHeight, w,h,w, h ) );
+				apps.push( new App( 'sphere', fullWidth, fullHeight,w,h, w, h ) );
+				apps.push( new App( 'pyramid', fullWidth, fullHeight, w,h,w, h ) );
+				apps.push( new App( 'cylinder', fullWidth, fullHeight, w,h, w, h ) );
+			}
+			function animate() {
+			
+			
+				$("div.row-fluid div").css("display","none");
+				$("#" + apps[ iterator ].containerId()).css("display","block");	
+					apps[ iterator ].animate();
+				
+				
+				requestAnimationFrame( animate );
+			}
+			function App( containerId, fullWidth, fullHeight, viewX, viewY, viewWidth, viewHeight ) {
+				var container, stats;
+				var camera, scene, renderer;
+				var mesh, group1, group2, group3, light;
+				var mouseX = 0, mouseY = 0;
+				var windowHalfX = window.innerWidth / 2;
+				var windowHalfY = window.innerHeight / 2;
+				init();
+				
+				
+			function init() {
+					var position = {x:0, y:0, z:0};
+					container = document.getElementById( containerId );
+					container.height =400;
+					renderer = new THREE.WebGLRenderer( { antialias: true } );
+					renderer.setClearColor( 0xffffff );
+					renderer.setSize( container.clientWidth, container.clientHeight );
+					container.appendChild( renderer.domElement );
+	
+					camera = new THREE.PerspectiveCamera( 20, container.clientWidth / container.clientHeight, 1, 1000 );
+					//camera.setViewOffset( fullWidth, fullHeight, viewX, viewY, viewWidth, viewHeight );
+					camera.position.z = 250;
+					scene = new THREE.Scene();
+					
+					var 			hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 0.9 );
+					hemiLight.color.setHSL( 0.6, 1, 0.6 );
+					hemiLight.groundColor.setHSL( 0.095, 1, 0.75 );
+					hemiLight.position.set( 50, 500, 100 );
+					scene.add( hemiLight );
+					// shadow
+						
+					var controls = new THREE.OrbitControls( camera, renderer.domElement );
+					// shadow
+			
+					
+					switch (containerId){
+						case "box": //"box":
+						
+						$("#box").append(createBox(scene, position));
+						$("#box canvas").click( function(elem){
+							$(".container").removeClass("selected");
+						 	$(this).addClass("selected");
+						 	//camera.position.z = 500;
+						});
+						break;
+						case "sphere": //"box":
+						
+						$("#sphere").append(createSphere(scene, position));
+						$("#sphere").click( function(elem){
+							$(".container").removeClass("selected");
+						 	$(this).addClass("selected");
+						 	//camera.position.z = 500;
+						});
+						break;
+						case "cylinder": //"box":
+						
+						$("#cylinder").append(createCylinder(scene, position));
+						$("#cylinder").click( function(elem){
+							$(".container").removeClass("selected");
+						 	$(this).addClass("selected");
+						 	//camera.position.z = 500;
+						});
+						break;
+						case "pyramid":
+						
+						$("#pyramid").append(createPyramid(scene, position));
+						$("#pyramid").click( function(elem){
+							$(".container").removeClass("selected");
+						 	$(this).addClass("selected");
+						 	//camera.position.z = 500;
+						
+						});
+						break;
+						
+					}
+					
+					
+					
+					document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				
+				}//init
+				function onDocumentMouseMove( event ) {
+					mouseX = ( event.clientX - windowHalfX );
+					mouseY = ( event.clientY - windowHalfY );
+				}
+				
+				this.containerId = function(){
+					return containerId;
+					}
+				//
+				this.animate = function() {
+					render();
+					//stats.update();
+				};
+				function render() {
+					//camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+					//camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+					camera.lookAt( scene.position );
+					renderer.render( scene, camera );
+				}
+			} //APp
+			
+			// listeners
+			document.addEventListener("mousedown", onDocumentMouseDown, false);
+			document.addEventListener("mousemove", onDocumentMouseMove, false);
+			document.addEventListener("mouseup", onDocumentMouseUp, false);
+			
+        
+        function createSphere(scene, pos, texture){
+				var sphere = new THREE.SphereGeometry(30,50,50);
+				//sphere.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
+				if(texture!= undefined){}
+				var sphereMaterial = new THREE.MeshLambertMaterial({color:"blue"});			
+				sphereMaterial.side =THREE.DoubleSide;
+				var sphereMesh = new THREE.Mesh(sphere, sphereMaterial);
+				sphereMesh.position.y = pos.y;
+				scene.add(sphereMesh);
+			
+				return sphere;
+			}
+       
+		function createBox(scene, pos, texture){
+			var box = new THREE.BoxGeometry(50,50,50);		
+			var meshFaceMaterial1 = new THREE.MeshLambertMaterial({color:"red"} );//new THREE.MeshFaceMaterial( materialArray );
+			meshFaceMaterial1.side = THREE.DoubleSide;
+			var dh_mesh_inside = new THREE.Mesh(box, meshFaceMaterial1);
+			dh_mesh_inside.position.y = pos.y;
+			scene.add(dh_mesh_inside);
+			return box;
+		}
+		        
+       	function createCylinder(scene, pos, texture){	
+			var cylinder = new THREE.CylinderGeometry(30, 30, 30, 30, false); 		
+			var cylinderMesh = new THREE.Mesh( cylinder, new THREE.MeshLambertMaterial( {	color:"yellow",side:THREE.DoubleSide}))	;//,vertexColors: THREE.FaceColors}));	
+			//cylinderMesh.rotation.y = 45 * Math.PI / 180;
+			cylinderMesh.position.y= pos.y;
+			scene.add(cylinderMesh);
+			return cylinder
+		}    
+		
+		function createPyramid(scene, pos, texture){
+	
+			var pyramid = new THREE.CylinderGeometry(0, 50, 50, 4, false); 		
+			var faceColors = [0xff0000, 0xff00f0, 0x0000ff, 0x00dd00];
+			faceColors.forEach( function(color, idx) 
+				{ pyramid.faces[2 * idx + 1].color.setHex(color);});	
+			var pyramidMesh = new THREE.Mesh( pyramid, new THREE.MeshLambertMaterial( {	vertexColors: THREE.FaceColors,side:THREE.DoubleSide}))	;//,vertexColors: THREE.FaceColors}));		
+			//pyramidMesh.rotation.y = 45 * Math.PI / 180;
+			pyramidMesh.position.y = pos.y;
+			scene.add(pyramidMesh);
+			
+			return scene;
+		}
+		
+		
+               function loadTexture(geo){
+            
+				var front = [new THREE.Vector2(0, .666), new THREE.Vector2(.5, .666), new THREE.Vector2(.5, 1), new THREE.Vector2(0, 1)];
+				var back =  [new THREE.Vector2(.5, .666), new THREE.Vector2(1, .666), new THREE.Vector2(1, 1), new THREE.Vector2(.5, 1)];
+				var sideR = [new THREE.Vector2(0, .333), new THREE.Vector2(.5, .333), new THREE.Vector2(.5, .666), new THREE.Vector2(0, .666)];
+				var sideL = [new THREE.Vector2(.5, .333), new THREE.Vector2(1, .333), new THREE.Vector2(1, .666), new THREE.Vector2(.5, .666)];
+				var top	 =  [new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0, .333)];
+				var bottom =[new THREE.Vector2(.5, 0), new THREE.Vector2(1, 0), new THREE.Vector2(1, .333), new THREE.Vector2(.5, .333)];
+				
+				geo.faceVertexUvs[0] = [];
+				
+				geo.faceVertexUvs[0][0] = [ front[0], front[1], front[3] ];
+				geo.faceVertexUvs[0][1] = [ front[1], front[2], front[3] ];
+				  
+				geo.faceVertexUvs[0][2] = [ back[0], back[1], back[3] ];
+				geo.faceVertexUvs[0][3] = [ back[1], back[2], back[3] ];
+				  
+				geo.faceVertexUvs[0][4] = [ sideR[0], sideR[1], sideR[3] ];
+				geo.faceVertexUvs[0][5] = [ sideR[1], sideR[2], sideR[3] ];
+				  
+				geo.faceVertexUvs[0][6] = [ sideL[0], sideL[1], sideL[3] ];
+				geo.faceVertexUvs[0][7] = [ sideL[1], sideL[2], sideL[3] ];
+				  
+				geo.faceVertexUvs[0][8] = [ new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(0,.333) ];
+				geo.faceVertexUvs[0][9] = [ new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0,.333)];
+				  
+				geo.faceVertexUvs[0][10] = [ bottom[0], bottom[1], bottom[3] ];
+				geo.faceVertexUvs[0][11] = [ bottom[1], bottom[2], bottom[3] ];
+			
+			return geo;
+            
+            }
+			// when the mouse is pressed, we switch to manual control and save current coordinates
+			function onDocumentMouseDown(event){
+				event.preventDefault();
+				manualControl = true;
+				savedX = event.clientX;
+				savedY = event.clientY;
+				savedLongitude = longitude;
+				savedLatitude = latitude;
+			}
+			// when the mouse moves, if in manual contro we adjust coordinates
+			function onDocumentMouseMove(event){
+				if(manualControl){
+					longitude = (savedX - event.clientX) * 0.1 + savedLongitude;
+					latitude = (event.clientY - savedY) * 0.1 + savedLatitude;
+				}
+			}
+			// when the mouse is released, we turn manual control off
+			function onDocumentMouseUp(event){
+				manualControl = false;
+			}
+			
+			// pressing a key (actually releasing it) changes the texture map
+			document.onkeyup = function(event){
+						
+    	}
+			
+		</script>
+	</body>
+</html>

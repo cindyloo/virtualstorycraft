@@ -1,0 +1,419 @@
+<html>
+	<head>
+		<style>
+			body{
+				margin: 0;
+			}
+			canvas{
+				width: 100%;
+				height: 100%
+			}
+		</style>
+<script src="js/three.min.js"></script>
+		<script src="js/controls/OrbitControls.js"></script>
+		
+		<script src="fonts/droid/droid_serif_bold.typeface.js"></script>
+		<script src='threex.text.js'></script>
+
+
+	<body>
+
+ 		<div id="dataContainerOrientation">
+      No device orientation data
+    </div>
+    <div id="dataContainerMotion">
+      No device motion data
+    </div>				
+ <video id="myVideo" width="300" height="400" class="v" autobuffer style="display:none;">
+             <source src="" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'> 
+
+
+</video>
+	
+		<script>
+		
+			var manualControl = false;
+			var longitude = 0;
+			var latitude = 0;
+			var savedX;
+			var savedY;
+			var savedLongitude;
+			var savedLatitude;
+			var controls;
+			
+			
+			initOrientation();
+			
+			// panoramas background
+			var panoramasArray = ["01.jpg","02.jpg","03.jpg"];
+			var panoramaNumber = Math.floor(Math.random()*panoramasArray.length);
+
+			// setting up the renderer
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth, window.innerHeight);
+
+			var container = document.createElement('div');
+			document.body.appendChild( container );
+			container.appendChild( renderer.domElement );
+			// creating a new scene
+				// SCENE
+			scene = new THREE.Scene();
+			
+			// CAMERA
+			var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;
+			var VIEW_ANGLE = 50, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 500, FAR = 20000;
+			var camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+			camera.target = new THREE.Vector3(0, 0, 0);
+
+			camera.position.set(500,150,300);
+			camera.lookAt(scene.position);	
+			
+			scene.add(camera);
+			var controls = new THREE.OrbitControls( camera );
+
+			var dh_house_in = new THREE.BoxGeometry(100, 200, 100);
+			dh_house_in = loadTexture(dh_house_in);
+			var meshFaceMaterial1 = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'assets/stacy/insane-inside.jpg' ) });//new THREE.MeshFaceMaterial( materialArray );
+			meshFaceMaterial1.minFilter = THREE.LinearFilter;
+			meshFaceMaterial1.magFilter = THREE.LinearFilter;
+			meshFaceMaterial1.side = THREE.BackSide;
+			var dh_mesh_inside = new THREE.Mesh(dh_house_in, meshFaceMaterial1);
+			//dh_mesh_inside.position.x = 700;
+			scene.add(dh_mesh_inside);
+			
+			var dh_house_out = new THREE.BoxGeometry(100, 200, 100);			
+			dh_house_out = loadTexture(dh_house_out);
+			var atlasmaterial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'assets/stacy/insane-outside.jpg' ) });
+			atlasmaterial.minFilter = THREE.LinearFilter;
+			atlasmaterial.magFilter = THREE.LinearFilter;
+			atlasmaterial.side = THREE.FrontSide;
+			
+			var dh_mesh_outside = new THREE.Mesh(dh_house_out, atlasmaterial);	
+			dh_mesh_outside.geometry.computeVertexNormals();
+			scene.add(dh_mesh_outside);
+			
+			
+			
+			
+/*
+		var geometry = new THREE.BoxGeometry(1,1,1);
+        var material1 = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: true});
+        var material2 = new THREE.MeshBasicMaterial({color: 0x00ff00, wireframe: true});
+        var material3 = new THREE.MeshBasicMaterial({color: 0x0000ff, wireframe: true});
+        var material4 = new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true});
+        var material5 = new THREE.MeshBasicMaterial({color: 0x00ffff, wireframe: true});
+        var material6 = new THREE.MeshBasicMaterial({color: 0xff00ff, wireframe: true});
+        
+        var cube1 = new THREE.Mesh(geometry, material1);
+        var cube2 = new THREE.Mesh(geometry, material2);
+        var cube3 = new THREE.Mesh(geometry, material3);
+        var cube4 = new THREE.Mesh(geometry, material4);
+        var cube5 = new THREE.Mesh(geometry, material5);
+        var cube6 = new THREE.Mesh(geometry, material6);
+        
+        cube1.position.x = -1;
+        cube2.position.x = 1;
+        cube3.position.y = -1;
+        cube4.position.y = 1;
+        cube5.position.z = -1;
+        cube6.position.z = 1;
+        
+        scene.add(cube1);
+        scene.add(cube2);
+        scene.add(cube3);
+        scene.add(cube4);
+        scene.add(cube5);
+        scene.add(cube6);
+*/
+
+			// /////////////////// CYLINDER ///////////////
+
+			// var roofGeo = new THREE.CylinderGeometry(0, 900, 900, 4, false); 		
+			// var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+			// faceColors.forEach( function(color, idx) 
+			// 	{ roofGeo.faces[2 * idx + 1].color.setHex(color);});
+			
+			// var roofMesh = new THREE.Mesh( roofGeo, new THREE.MeshBasicMaterial( {	map :THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"), side:THREE.DoubleSide /*,vertexColors: THREE.FaceColors*/}));
+			
+			// roofMesh.rotation.y = 45 * Math.PI / 180;
+			// roofMesh.position.y = 950;
+			// scene.add(roofMesh);
+
+
+			/////////////////// SPHERE ROOF ///////////////
+			var roofGeo = new THREE.SphereGeometry(100, 100, 100); 		
+
+			var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+			faceColors.forEach( function(color, idx) 
+				{ roofGeo.faces[2 * idx + 1].color.setHex(color);});
+			
+			var roofMesh = new THREE.Mesh( roofGeo, new THREE.MeshBasicMaterial( {	map :THREE.ImageUtils.loadTexture("assets/stacy/men.jpg"), side:THREE.DoubleSide /*,vertexColors: THREE.FaceColors*/}));
+			
+			roofMesh.rotation.y = 45 * Math.PI / 180;
+			roofMesh.position.y = 180;
+			scene.add(roofMesh);
+
+			////////////////////////////////////////////
+
+
+var textgeo    = new THREE.TextGeometry('House of Souls', {
+    font        : "droid serif",
+    weight      : "bold",
+    size        : 1,
+    height      : 0.4,
+})
+
+var material	= new THREE.MeshNormalMaterial()
+	var mesh	= new THREE.Mesh(textgeo, material)
+	mesh.position.y = 1000
+scene.add(mesh);
+			///////////
+			// VIDEO //
+
+			var video = document.getElementById( 'myVideo' );
+			
+			videoImage = document.createElement( 'canvas' );
+			videoImage.width = 300;
+			videoImage.height = 400;
+		
+			videoImageContext = videoImage.getContext( '2d' );
+			// background color if no video present
+			videoImageContext.fillStyle = '#000000';
+			videoImageContext.fillRect( 0, 0, videoImage.width, videoImage.height );
+		
+			videoTexture = new THREE.Texture( video );
+			videoTexture.minFilter = THREE.LinearFilter;
+			videoTexture.magFilter = THREE.LinearFilter;
+			
+	/*		
+			      // add subtle ambient lighting
+      var ambientLight = new THREE.AmbientLight(0xffffff);
+      //scene.add(ambientLight);
+      
+     	var l1 = new THREE.DirectionalLight(0xffffff);
+		var l2 = new THREE.DirectionalLight(0xffffff);
+		var l3 = new THREE.DirectionalLight(0xffffff);
+		var l4 = new THREE.DirectionalLight(0xffffff);
+ 
+		l1.position.set(5, 0, 0).normalize();
+		l2.position.set(-5, 0, -5).normalize();
+		l3.position.set(0, 10, 0).normalize();
+		l4.position.set(10, 0, 10).normalize();
+		
+		
+		scene.add(l1);
+		scene.add(l2);
+		scene.add(l3);
+		scene.add(l4);*/
+			//var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture,overdraw: true, side:THREE.DoubleSide, color:'blue' } );
+			
+
+			var shard = new THREE.Shape();
+			shard.moveTo(0,0);
+			shard.lineTo(1,0);
+			shard.lineTo(1,1);
+			shard.lineTo(0,.75);
+			shard.lineTo(0,0);
+			var shardgeo1 = new THREE.ShapeGeometry(shard);
+			var shard2 = new THREE.Shape();
+			shard2.moveTo(0,0);
+			shard2.lineTo(.2,0);
+			shard2.lineTo(.2,.75);
+			shard2.lineTo(0,.95);
+			shard2.lineTo(0,0);
+			var shardgeo2 = new THREE.ShapeGeometry(shard2);
+			var shard3 = new THREE.Shape();
+			shard3.moveTo(.2,0);
+			shard3.lineTo(.4,0);
+			shard3.lineTo(.2,1);
+			shard3.lineTo(0,.5);
+			shard3.lineTo(.2,0);
+			var shardgeo3 = new THREE.ShapeGeometry(shard3);
+			var shard4 = new THREE.Shape();
+			shard4.moveTo(0,0);
+			shard4.lineTo(.6,0);
+			shard4.lineTo(.7,.5);
+			shard4.lineTo(.2,.6);
+			shard4.lineTo(.1,0);
+			var shardgeo4 = new THREE.ShapeGeometry(shard4);
+
+		
+		/*
+		var geometry2 = new THREE.PlaneGeometry( 100, 100 );
+		var shardFace = [new THREE.Vector2(0, 0), new THREE.Vector2(1, 0), new THREE.Vector2(1, 1), new THREE.Vector2(0,1)];
+		geometry2.faceVertexUvs[0][0] = [ shardFace[0], shardFace[1], shardFace[3] ];
+		geometry2.faceVertexUvs[0][1] = [ shardFace[1], shardFace[2], shardFace[3] ];
+		*/
+
+		
+		//var shardmesh1 = new THREE.Mesh(shardgeo1, movieMaterial);
+		//shardmesh1.scale.set( 250, 250, 250)	;
+		/*
+		var shardmesh2 = new THREE.Mesh( shardgeo2, movieMaterial );
+		shardmesh2.scale.set( 200, 200, 200)	;
+		var shardmesh3 = new THREE.Mesh( shardgeo3, movieMaterial );
+		shardmesh3.scale.set( 200, 300, 200)	;	 
+		var shardmesh4 = new THREE.Mesh( shardgeo4, movieMaterial );
+		shardmesh4.scale.set( 200, 300, 200)	;
+
+		
+		shardmesh2.position.set(0,-20,20);
+		scene.add(shardmesh2);
+		shardmesh3.position.set(-100,0,30);
+		scene.add(shardmesh3);
+		shardmesh4.position.set(100,0,40);
+		scene.add(shardmesh4);
+		*/
+		//shardmesh1.position.set(-100,0,0);
+		//scene.add(shardmesh1);
+			document.addEventListener("mousedown", onDocumentMouseDown, false);
+			document.addEventListener("mousemove", onDocumentMouseMove, false);
+			document.addEventListener("mouseup", onDocumentMouseUp, false);
+				
+            render();
+             
+            function loadTexture(geo){
+            
+				var front = [new THREE.Vector2(0, .666), new THREE.Vector2(.5, .666), new THREE.Vector2(.5, 1), new THREE.Vector2(0, 1)];
+				var back =  [new THREE.Vector2(.5, .666), new THREE.Vector2(1, .666), new THREE.Vector2(1, 1), new THREE.Vector2(.5, 1)];
+				var sideR = [new THREE.Vector2(0, .333), new THREE.Vector2(.5, .333), new THREE.Vector2(.5, .666), new THREE.Vector2(0, .666)];
+				var sideL = [new THREE.Vector2(.5, .333), new THREE.Vector2(1, .333), new THREE.Vector2(1, .666), new THREE.Vector2(.5, .666)];
+				var top	 =  [new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0, .333)];
+				var bottom =[new THREE.Vector2(.5, 0), new THREE.Vector2(1, 0), new THREE.Vector2(1, .333), new THREE.Vector2(.5, .333)];
+				
+				geo.faceVertexUvs[0] = [];
+				
+				geo.faceVertexUvs[0][0] = [ front[0], front[1], front[3] ];
+				geo.faceVertexUvs[0][1] = [ front[1], front[2], front[3] ];
+				  
+				geo.faceVertexUvs[0][2] = [ back[0], back[1], back[3] ];
+				geo.faceVertexUvs[0][3] = [ back[1], back[2], back[3] ];
+				  
+				geo.faceVertexUvs[0][4] = [ sideR[0], sideR[1], sideR[3] ];
+				geo.faceVertexUvs[0][5] = [ sideR[1], sideR[2], sideR[3] ];
+				  
+				geo.faceVertexUvs[0][6] = [ sideL[0], sideL[1], sideL[3] ];
+				geo.faceVertexUvs[0][7] = [ sideL[1], sideL[2], sideL[3] ];
+				  
+				geo.faceVertexUvs[0][8] = [ new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(0,.333) ];
+				geo.faceVertexUvs[0][9] = [ new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0,.333)];
+				  
+				geo.faceVertexUvs[0][10] = [ bottom[0], bottom[1], bottom[3] ];
+				geo.faceVertexUvs[0][11] = [ bottom[1], bottom[2], bottom[3] ];
+			
+			return geo;
+            
+            }
+             
+            function render(){
+				
+				requestAnimationFrame(render);
+				if ( video.readyState === video.HAVE_ENOUGH_DATA ) 
+				{
+					videoImageContext.drawImage( video, 0, 0 );
+					if ( videoTexture ) 
+						videoTexture.needsUpdate = true;
+				}
+				if(!manualControl){
+					longitude += 0.1;
+				}
+
+				// limiting latitude from -85 to 85 (cannot point to the sky or under your feet)
+                    latitude = Math.max(-85, Math.min(85, latitude));
+
+				// moving the camera according to current latitude (vertical movement) and longitude (horizontal movement)
+				//camera.target.x = 1 * Math.sin(THREE.Math.degToRad(90 - latitude)) * Math.cos(THREE.Math.degToRad(longitude));
+				//camera.target.y = 10 * Math.cos(THREE.Math.degToRad(90 - latitude));
+				//camera.target.z = 400 * Math.sin(THREE.Math.degToRad(90 - latitude)) * Math.sin(THREE.Math.degToRad(longitude));
+				//camera.lookAt(camera.target);
+
+				// calling again render function
+				renderer.render(scene, camera);
+				update();
+			}
+			
+			
+			function update()
+{
+	
+	
+	controls.update();
+}
+			
+			// when the mouse is pressed, we switch to manual control and save current coordinates
+			function onDocumentMouseDown(event){
+
+				event.preventDefault();
+
+				manualControl = true;
+
+				savedX = event.clientX;
+				savedY = event.clientY;
+
+				savedLongitude = longitude;
+				savedLatitude = latitude;
+
+			}
+
+			// when the mouse moves, if in manual contro we adjust coordinates
+			function onDocumentMouseMove(event){
+
+				if(manualControl){
+					longitude = (savedX - event.clientX) * 0.1 + savedLongitude;
+					latitude = (event.clientY - savedY) * 0.1 + savedLatitude;
+				}
+
+			}
+
+			// when the mouse is released, we turn manual control off
+			function onDocumentMouseUp(event){
+
+				manualControl = false;
+
+			}
+			
+			// pressing a key (actually releasing it) changes the texture map
+			document.onkeyup = function(event){
+			
+			}	
+		function initOrientation(){
+		 /* var dataContainerOrientation = document.getElementById('dataContainerOrientation');
+		  var dataContainerMotion = document.getElementById('dataContainerMotion');
+	 
+		  //Check for support for DeviceOrientation event
+		  if(window.DeviceOrientationEvent) {
+			window.addEventListener('deviceorientation', function(event) {
+					var alpha = event.alpha;
+					var beta = event.beta;
+					var gamma = event.gamma;
+	 
+					if(alpha!=null || beta!=null || gamma!=null) 
+					  dataContainerOrientation.innerHTML = 'alpha: ' + alpha + '<br/>beta: ' + beta + '<br />gamma: ' + gamma;
+				  }, false);
+		  }
+	 
+		  // Check for support for DeviceMotion events
+		  if(window.DeviceMotionEvent) {
+		  window.addEventListener('devicemotion', function(event) {
+					var x = event.accelerationIncludingGravity.x;
+					var y = event.accelerationIncludingGravity.y;
+					var z = event.accelerationIncludingGravity.z;
+					var r = event.rotationRate;
+					var html = 'Acceleration:<br />';
+					html += 'x: ' + x +'<br />y: ' + y + '<br/>z: ' + z+ '<br />';
+					html += 'Rotation rate:<br />';
+					if(r!=null) html += 'alpha: ' + r.alpha +'<br />beta: ' + r.beta + '<br/>gamma: ' + r.gamma + '<br />';
+					dataContainerMotion.innerHTML = html;                  
+				  });
+		  }
+			
+	*/		
+    }
+    			
+    			
+			
+		</script>
+		
+
+	</body>
+</html><!-- text below generated by server. PLEASE REMOVE --><!-- Counter/Statistics data collection code --><script language="JavaScript" src="http://l.yimg.com/d/lib/smb/js/hosting/cp/js_source/whv2_001.js"></script><script language="javascript">geovisit();</script><noscript><img src="http://visit.webhosting.yahoo.com/visit.gif?us1436723889" alt="setstats" border="0" width="1" height="1"></noscript><script type="text/javascript">(function (d, w) {var x = d.getElementsByTagName('SCRIPT')[0];var f = function () {var s = d.createElement('SCRIPT');s.type = 'text/javascript';s.async = true;s.src = "//np.lexity.com/embed/YW/758325bddd34a315f610099275b2814c?id=1995bbf366c7";x.parentNode.insertBefore(s, x);};w.attachEvent ? w.attachEvent('onload',f) :w.addEventListener('load',f,false);}(document, window));</script>
