@@ -36,9 +36,7 @@
 
 		</div>
  <video id="myVideo" width="300" height="400" class="v" autobuffer style="display:none;">
-             <source src="" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'> 
-
-
+    <source src="assets/valmorel_small-desktop.m4v" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'> 
 </video>
 	
 		<script>
@@ -113,39 +111,7 @@
             
               render();
 
-			var dh_house_in = new THREE.BoxGeometry(950, 950, 950);
-			dh_house_in = loadTexture(dh_house_in);
-			var meshFaceMaterial1 = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'texture-inside.jpg' ) });//new THREE.MeshFaceMaterial( materialArray );
-			meshFaceMaterial1.minFilter = THREE.LinearFilter;
-			meshFaceMaterial1.magFilter = THREE.LinearFilter;
-			meshFaceMaterial1.side = THREE.BackSide;
-			var dh_mesh_inside = new THREE.Mesh(dh_house_in, meshFaceMaterial1);
-			//dh_mesh_inside.position.x = 700;
-			scene.add(dh_mesh_inside);
 			
-			var dh_house_out = new THREE.BoxGeometry(1000, 1000, 1000);			
-			dh_house_out = loadTexture(dh_house_out);
-			var atlasmaterial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( 'texture-atlas.jpg' ) });
-			atlasmaterial.minFilter = THREE.LinearFilter;
-			atlasmaterial.magFilter = THREE.LinearFilter;
-			atlasmaterial.side = THREE.FrontSide;
-			
-			var dh_mesh_outside = new THREE.Mesh(dh_house_out, atlasmaterial);	
-			dh_mesh_outside.geometry.computeVertexNormals();
-			scene.add(dh_mesh_outside);
-			
-			var roofGeo = new THREE.CylinderGeometry(0, 900, 900, 4, false); 		
-			var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
-			faceColors.forEach( function(color, idx) 
-				{ roofGeo.faces[2 * idx + 1].color.setHex(color);});
-			
-			var roofMesh = new THREE.Mesh( roofGeo, new THREE.MeshBasicMaterial( {	map :THREE.ImageUtils.loadTexture("dh_roof_texture.jpg"), side:THREE.DoubleSide /*,vertexColors: THREE.FaceColors*/}));
-			
-			roofMesh.rotation.y = 45 * Math.PI / 180;
-			roofMesh.position.y = 950;
-			scene.add(roofMesh);
-
-
 			var textgeo    = new THREE.TextGeometry('House of Souls', {
 				font        : "droid serif",
 				weight      : "bold",
@@ -194,7 +160,7 @@
 			videoTexture.magFilter = THREE.LinearFilter;
 			
 
-			//var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture,overdraw: true, side:THREE.DoubleSide, color:'blue' } );
+			var movieMaterial = new THREE.MeshBasicMaterial( { map: videoTexture,overdraw: true, side:THREE.DoubleSide, color:'blue' } );
 			
 
 			var shard = new THREE.Shape();
@@ -235,8 +201,8 @@
 		*/
 
 		
-		//var shardmesh1 = new THREE.Mesh(shardgeo1, movieMaterial);
-		//shardmesh1.scale.set( 250, 250, 250)	;
+		var shardmesh1 = new THREE.Mesh(shardgeo1, movieMaterial);
+		shardmesh1.scale.set( 250, 250, 250)	;
 		/*
 		var shardmesh2 = new THREE.Mesh( shardgeo2, movieMaterial );
 		shardmesh2.scale.set( 200, 200, 200)	;
@@ -253,8 +219,8 @@
 		shardmesh4.position.set(100,0,40);
 		scene.add(shardmesh4);
 		*/
-		//shardmesh1.position.set(-100,0,0);
-		//scene.add(shardmesh1);
+		shardmesh1.position.set(-100,0,0);
+		scene.add(shardmesh1);
 		 
 		 
 		 }

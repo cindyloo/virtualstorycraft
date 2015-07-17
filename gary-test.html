@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>three.js - pointerlock controls</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+        }
+        body {
+            background-color: #ffffff;
+            margin: 0;
+            overflow: hidden;
+            font-family: arial;
+        }
+        #blocker {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        #instructions {
+            width: 100%;
+            height: 100%;
+            display: -webkit-box;
+            display: -moz-box;
+            display: box;
+            -webkit-box-orient: horizontal;
+            -moz-box-orient: horizontal;
+            box-orient: horizontal;
+            -webkit-box-pack: center;
+            -moz-box-pack: center;
+            box-pack: center;
+            -webkit-box-align: center;
+            -moz-box-align: center;
+            box-align: center;
+            color: #ffffff;
+            text-align: center;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="js/three.js"></script>
+    <script src="js/controls/PointerLockControls.js"></script>
+    <video id="myVideo" width="300" height="400" class="v" autobuffer style="display:none">
+        <source src="assets/test.mp4" type='video/mp4; '>
+
+
+    </video>
+    <div id="blocker">
+
+        <div id="instructions">
+            <span style="font-size:40px">Click to play</span>
+            <br /> (W, A, S, D = Move, SPACE = Jump, MOUSE = Look around)
+        </div>
+
+    </div>
+
+    <script>
+        var camera, scene, renderer;
+        var geometry, material, mesh;
+        var controls;
+
+        var objects = [];
+
+        var raycaster;
+        var video = document.getElementById('myVideo');
+        var blocker = document.getElementById('blocker');
+        var instructions = document.getElementById('instructions');
+
+        // http://www.html5rocks.com/en/tutorials/pointerlock/intro/
+
+        var havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
+
+        if (havePointerLock) {
+
+            var element = document.body;
+
+            var pointerlockchange = function(event) {
+
+                if (document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element) {
+
+                    controlsEnabled = true;
+                    controls.enabled = true;
+
+                    blocker.style.display = 'none';
+
+                } else {
+
+                    controls.enabled = false;
+
+                    blocker.style.display = '-webkit-box';
+                    blocker.style.display = '-moz-box';
+                    blocker.style.display = 'box';
+
+                    instructions.style.display = '';
+
+                }
+
+            }
+
+            var pointerlockerror = function(event) {
+
+                instructions.style.display = '';
+
+            }
+
+            // Hook pointer lock state change events
+            document.addEventListener('pointerlockchange', pointerlockchange, false);
+            document.addEventListener('mozpointerlockchange', pointerlockchange, false);
+            document.addEventListener('webkitpointerlockchange', pointerlockchange, false);
+
+            document.addEventListener('pointerlockerror', pointerlockerror, false);
+            document.addEventListener('mozpointerlockerror', pointerlockerror, false);
+            document.addEventListener('webkitpointerlockerror', pointerlockerror, false);
+
+            instructions.addEventListener('click', function(event) {
+
+                instructions.style.display = 'none';
+
+                // Ask the browser to lock the pointer
+                element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+
+                if (/Firefox/i.test(navigator.userAgent)) {
+
+                    var fullscreenchange = function(event) {
+
+                        if (document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element) {
+
+                            document.removeEventListener('fullscreenchange', fullscreenchange);
+                            document.removeEventListener('mozfullscreenchange', fullscreenchange);
+
+                            element.requestPointerLock();
+                        }
+
+                    }
+
+                    document.addEventListener('fullscreenchange', fullscreenchange, false);
+                    document.addEventListener('mozfullscreenchange', fullscreenchange, false);
+
+                    element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
+
+                    element.requestFullscreen();
+
+                } else {
+
+                    element.requestPointerLock();
+
+                }
+
+            }, false);
+
+        } else {
+
+            instructions.innerHTML = 'Your browser doesn\'t seem to support Pointer Lock API';
+
+        }
+
+        init();
+
+
+
+        animate();
+
+        var controlsEnabled = false;
+
+        var moveForward = false;
+        var moveBackward = false;
+        var moveLeft = false;
+        var moveRight = false;
+
+        var prevTime = performance.now();
+        var velocity = new THREE.Vector3();
+
+
+
+        // SET BACKGROUND IMAGE
+		// Load the background texture
+        var texture = THREE.ImageUtils.loadTexture( 'assets/birds-a-flock-of-seagulls-john-harmon.jpg' );
+        var backgroundMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(2, 2, 0),
+            new THREE.MeshBasicMaterial({
+                map: texture
+            }));
+
+        backgroundMesh.material.depthTest = false;
+        backgroundMesh.material.depthWrite = false;
+
+        // Create your background scene
+        var backgroundScene = new THREE.Scene();
+        var backgroundCamera = new THREE.Camera();
+        backgroundScene.add(backgroundCamera);
+        backgroundScene.add(backgroundMesh);
+
+	var geometryWire = new THREE.BoxGeometry( 100, 100, 100, 4, 4, 4 );
+						var material = new THREE.MeshBasicMaterial( { color: 0xff00ff, side: THREE.BackSide, wireframe: true } );
+						var meshWire = new THREE.Mesh( geometryWire, material );
+						scene.add( meshWire );
+
+
+        function init() {
+
+
+            videoTexture = new THREE.Texture(video);
+            videoTexture.minFilter = THREE.LinearFilter;
+            videoTexture.magFilter = THREE.LinearFilter;
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.z = 5;
+
+            scene = new THREE.Scene();
+            //scene.fog = new THREE.Fog( 0xffffff, 0, 2050 );
+
+            var light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
+            light.position.set(0.5, 1, 0.75);
+            scene.add(light);
+
+            controls = new THREE.PointerLockControls(camera);
+            scene.add(controls.getObject());
+
+            // var textureIN = "assets/birds-a-flock-of-seagulls-john-harmon.jpg";
+            // //textureOUT = "assets/birds-a-flock-of-seagulls-john-harmon-inside.jpg";
+            // var sphereIN = new THREE.SphereGeometry(50, 50, 50);
+            // //var sphereOUT = new THREE.SphereGeometry(2000,2000,2000);
+            // var insidematerial, outsidematerial;
+            // insidematerial = new THREE.MeshBasicMaterial({
+            //     map: THREE.ImageUtils.loadTexture(textureIN)
+            // });
+            // insidematerial.side = THREE.BackSide;
+
+
+            // var mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+            // mesh_inside.position = (0, 0, 0);
+            // //var mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+            // //mesh_outside.position= mesh_inside.position;
+
+            // scene.add(mesh_inside);
+
+
+
+            
+
+            ////////////////////////////////////////////////////////
+
+            // CREATE A BIG SPHERE OF SEAGULLS
+
+            // var textureIN = "assets/birds-a-flock-of-seagulls-john-harmon.jpg";
+            // var textureOUT = "assets/birds-a-flock-of-seagulls-john-harmon.jpg";
+            // var sphereIN = new THREE.SphereGeometry(800, 800, 800);
+            // var sphereOUT = new THREE.SphereGeometry(50, 50, 50);
+            // var insidematerial, outsidematerial;
+            // insidematerial = new THREE.MeshBasicMaterial({
+            //     map: THREE.ImageUtils.loadTexture(textureIN)
+            // });
+            // insidematerial.side = THREE.DoubleSide;
+            // outsidematerial = new THREE.MeshBasicMaterial({
+            //     map: THREE.ImageUtils.loadTexture(textureOUT)
+            // });
+            // outsidematerial.side = THREE.DoubleSide;
+            // var mesh_inside3 = new THREE.Mesh(sphereIN, insidematerial);
+            // mesh_inside3.position.x = 0;
+            // mesh_inside3.position.y = 0;
+            // mesh_inside3.position.z = 0;
+            // var mesh_outside3 = new THREE.Mesh(sphereOUT, outsidematerial);
+            // mesh_outside3.position = mesh_inside3.position;
+            // scene.add(mesh_inside3);
+            // scene.add(mesh_outside3);
+
+
+            ////////////////////////////////////////////////////////
+
+            var onKeyDown = function(event) {
+
+                switch (event.keyCode) {
+
+                    case 38: // up
+                    case 87: // w
+                        moveForward = true;
+                        break;
+
+                    case 37: // left
+                    case 65: // a
+                        moveLeft = true;
+                        break;
+
+                    case 40: // down
+                    case 83: // s
+                        moveBackward = true;
+                        break;
+
+                    case 39: // right
+                    case 68: // d
+                        moveRight = true;
+                        break;
+
+                    case 32: // space
+                        if (canJump === true) velocity.y += 350;
+                        canJump = false;
+                        break;
+
+                }
+
+            };
+
+            var onKeyUp = function(event) {
+
+                switch (event.keyCode) {
+
+                    case 38: // up
+                    case 87: // w
+                        moveForward = false;
+                        break;
+
+                    case 37: // left
+                    case 65: // a
+                        moveLeft = false;
+                        break;
+
+                    case 40: // down
+                    case 83: // s
+                        moveBackward = false;
+                        break;
+
+                    case 39: // right
+                    case 68: // d
+                        moveRight = false;
+                        break;
+
+                }
+
+            };
+
+            document.addEventListener('keydown', onKeyDown, false);
+            document.addEventListener('keyup', onKeyUp, false);
+
+            raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0), 0, 10);
+
+
+
+
+
+var roofGeo, faceColors,roofMesh;
+var boxOUT = new THREE.BoxGeometry(100, 100, 100);
+var boxIN = new THREE.BoxGeometry(98, 98, 98);
+var sphereIN = new THREE.SphereGeometry(48,48,48);
+var sphereOUT = new THREE.SphereGeometry(50,50,50);
+var textureIN = ["assets/beat_hotel.jpg", "assets/stacy/insane-inside.jpg","assets/jack/finding-nemo.jpg",
+                "assets/jack/vegas-strip.jpg","assets/jack/texture-inside.jpg","assets/jack/texture-inside.jpg",
+               "assets/jack/finding-nemo.jpg","assets/jack/Wash-Park-Inside.png" , "assets/kit/Trans-Kit.png",
+                "assets/kit/insidespace-kit.png","assets/stacy/insane-inside.jpg", "assets/cindy/texture-inside.png"];
+                var textureOUT = ["assets/beat_hotel.jpg", "assets/stacy/insane-outside.jpg","assets/kit/texture-outside.jpg",
+                "assets/jack/vegas-strip.jpg","assets/kit/texture-atlas.jpg", "assets/kit/texture-atlas.jpg",
+               "assets/jack/beach.jpg","assets/jack/Wash-Park-Outside.png", "assets/kit/Trans-Kit.png",
+                "assets/kit/outerhouse-kit.png","assets/stacy/insane-outside.jpg", "assets/cindy/texture-atlas.png"];
+
+         		var roofTex = ["assets/roof_texture.jpg", "assets/stacy/men.jpg"];
+         		
+         		
+         		
+            for (var i = 0; i < 5; i++) {
+               
+               
+               
+   
+                ////////////////////////////////////////////////////////
+
+				//boxes
+				for (var bp =0;bp<textureIN.length;bp++){
+              
+					boxIN = loadTexture(boxIN);
+					var insidematerial = new THREE.MeshBasicMaterial({
+						map: THREE.ImageUtils.loadTexture(textureIN[bp]), transparent: true
+					});
+					insidematerial.minFilter = THREE.LinearFilter;
+					insidematerial.magFilter = THREE.LinearFilter;
+					insidematerial.side = THREE.BackSide;
+					var mesh_inside2 = new THREE.Mesh(boxIN, insidematerial);
+					//mesh_inside2.position.x = 90;
+					mesh_inside2.position.x = Math.floor( Math.random() * 10 ) * 90;
+					mesh_inside2.position.y = Math.floor( Math.random() * 2 ) ;
+					mesh_inside2.position.z = Math.floor(Math.random() * 90) * 90;
+					scene.add(mesh_inside2);
+					boxOUT = loadTexture(boxOUT);
+					var atlasmaterial = new THREE.MeshBasicMaterial({
+						map: THREE.ImageUtils.loadTexture(textureOUT[bp]), transparent: true
+					});
+					atlasmaterial.minFilter = THREE.LinearFilter;
+					atlasmaterial.magFilter = THREE.LinearFilter;
+					atlasmaterial.side = THREE.FrontSide;
+					var mesh_outside2 = new THREE.Mesh(boxOUT, atlasmaterial);
+					mesh_outside2.position = mesh_inside2.position;
+					scene.add(mesh_outside2);
+	
+	
+	
+					var roofGeo = new THREE.CylinderGeometry(0, 100, 100, 4, false);
+					var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+					
+					var roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+						map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+						side: THREE.DoubleSide,
+						vertexColors: Math.random()
+					}));
+				roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside2.position.x;
+                roofMesh.position.z = mesh_outside2.position.z;
+                roofMesh.position.y = 100;
+                scene.add(roofMesh);
+
+	
+				}
+			
+				//spheres
+				for (var sp =0;sp<textureIN.length;sp++){
+			
+					insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN[sp] ) });			
+					insidematerial.side = THREE.DoubleSide;
+					outsidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT[sp] ) });			
+					outsidematerial.side = THREE.DoubleSide;
+					var mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+					mesh_inside.position.x =Math.floor( Math.random() * 20 - 10 ) * 15;
+					mesh_inside.position.y = Math.floor( Math.random() * 15- 10 ) * 10;
+					mesh_inside.position.z = Math.floor( Math.random() * 90 - 10 ) * 90;
+					var mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+					mesh_outside.position= mesh_inside.position;
+					scene.add(mesh_inside);
+					scene.add(mesh_outside);
+
+
+            	}	
+
+            }
+
+            renderer = new THREE.WebGLRenderer();
+           
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            //
+
+            window.addEventListener('resize', onWindowResize, false);
+
+        }
+
+
+        function createSphere(scene1, pos, textureIN, textureOUT) {
+
+            var sphereIN = new THREE.SphereGeometry(48, 48, 48);
+            var sphereOUT = new THREE.SphereGeometry(50, 50, 50);
+            //sphereIN.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
+            if (textureIN != undefined && textureIN != null) {
+                var insidematerial;
+
+                if (textureIN.indexOf("jpg") > -1) {
+                    insidematerial = new THREE.MeshBasicMaterial({
+                        map: THREE.ImageUtils.loadTexture(textureIN)
+                    });
+
+                } else if (textureIN.indexOf("mp4") > -1) {
+                    videoImage = document.createElement('canvas');
+                    videoImage.width = 300;
+                    videoImage.height = 400;
+
+                    videoImageContext = videoImage.getContext('2d');
+                    // background color if no video present
+                    videoImageContext.fillStyle = '#000000';
+                    videoImageContext.fillRect(0, 0, videoImage.width, videoImage.height);
+
+                    videoTexture = new THREE.Texture(video);
+                    videoTexture.minFilter = THREE.LinearFilter;
+                    videoTexture.magFilter = THREE.LinearFilter;
+                    insidematerial = new THREE.MeshBasicMaterial({
+                        map: videoTexture,
+                        overdraw: true,
+                        side: THREE.DoubleSide,
+                        color: 'blue'
+                    });
+
+                }
+
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+                mesh_inside.position = pos;
+                scene.add(mesh_inside);
+
+            }
+            if (textureOUT != undefined && textureOUT != null) {
+                var outsidematerial;
+                //sphereOUT = loadTexture(sphereOUT);
+                if (textureOUT.indexOf("jpg") > -1) {
+                    outsidematerial = new THREE.MeshBasicMaterial({
+                        map: THREE.ImageUtils.loadTexture(textureOUT)
+                    });
+
+                } else if (textureOUT.indexOf("mp4") > -1) {
+                    videoTexture = new THREE.Texture(video);
+                    videoTexture.minFilter = THREE.LinearFilter;
+                    videoTexture.magFilter = THREE.LinearFilter;
+                    outsidematerial = new THREE.MeshBasicMaterial({
+                        map: videoTexture,
+                        overdraw: true,
+                        side: THREE.DoubleSide,
+                        color: 'blue'
+                    });
+
+                }
+                var mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+                mesh_outside.geometry.computeVertexNormals();
+                mesh_outside.position = pos;
+                scene.add(mesh_outside);
+
+
+            }
+            if (textureOUT == null && textureOUT == null) {
+                var sphereMaterial = new THREE.MeshLambertMaterial({
+                    color: "blue"
+                });
+                sphereMaterial.side = THREE.DoubleSide;
+                var sphereMesh = new THREE.Mesh(sphere, sphereMaterial);
+                sphereMesh.position = pos;
+                scene.add(sphereMesh);
+            }
+            //return mesh_outside;
+        }
+
+      
+
+        function loadTexture(geo) {
+
+            var front = [new THREE.Vector2(0, .666), new THREE.Vector2(.5, .666), new THREE.Vector2(.5, 1), new THREE.Vector2(0, 1)];
+            var back = [new THREE.Vector2(.5, .666), new THREE.Vector2(1, .666), new THREE.Vector2(1, 1), new THREE.Vector2(.5, 1)];
+            var sideR = [new THREE.Vector2(0, .333), new THREE.Vector2(.5, .333), new THREE.Vector2(.5, .666), new THREE.Vector2(0, .666)];
+            var sideL = [new THREE.Vector2(.5, .333), new THREE.Vector2(1, .333), new THREE.Vector2(1, .666), new THREE.Vector2(.5, .666)];
+            var top = [new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0, .333)];
+            var bottom = [new THREE.Vector2(.5, 0), new THREE.Vector2(1, 0), new THREE.Vector2(1, .333), new THREE.Vector2(.5, .333)];
+
+            geo.faceVertexUvs[0] = [];
+
+            geo.faceVertexUvs[0][0] = [front[0], front[1], front[3]];
+            geo.faceVertexUvs[0][1] = [front[1], front[2], front[3]];
+
+            geo.faceVertexUvs[0][2] = [back[0], back[1], back[3]];
+            geo.faceVertexUvs[0][3] = [back[1], back[2], back[3]];
+
+            geo.faceVertexUvs[0][4] = [sideR[0], sideR[1], sideR[3]];
+            geo.faceVertexUvs[0][5] = [sideR[1], sideR[2], sideR[3]];
+
+            geo.faceVertexUvs[0][6] = [sideL[0], sideL[1], sideL[3]];
+            geo.faceVertexUvs[0][7] = [sideL[1], sideL[2], sideL[3]];
+
+            geo.faceVertexUvs[0][8] = [new THREE.Vector2(0, 0), new THREE.Vector2(.5, 0), new THREE.Vector2(0, .333)];
+            geo.faceVertexUvs[0][9] = [new THREE.Vector2(.5, 0), new THREE.Vector2(.5, .333), new THREE.Vector2(0, .333)];
+
+            geo.faceVertexUvs[0][10] = [bottom[0], bottom[1], bottom[3]];
+            geo.faceVertexUvs[0][11] = [bottom[1], bottom[2], bottom[3]];
+
+            return geo;
+
+        }
+
+        function onWindowResize() {
+
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+        }
+
+        function animate() {
+
+            requestAnimationFrame(animate);
+
+            if (controlsEnabled) {
+                raycaster.ray.origin.copy(controls.getObject().position);
+                raycaster.ray.origin.y -= 10;
+
+                var intersections = raycaster.intersectObjects(objects);
+
+                var isOnObject = intersections.length > 0;
+
+                var time = performance.now();
+                var delta = (time - prevTime) / 1000;
+
+                velocity.x -= velocity.x * 10.0 * delta;
+                velocity.z -= velocity.z * 10.0 * delta;
+
+                velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+
+                if (moveForward) velocity.z -= 400.0 * delta;
+                if (moveBackward) velocity.z += 400.0 * delta;
+
+                if (moveLeft) velocity.x -= 400.0 * delta;
+                if (moveRight) velocity.x += 400.0 * delta;
+
+                if (isOnObject === true) {
+                    velocity.y = Math.max(0, velocity.y);
+
+                    canJump = true;
+                }
+
+                controls.getObject().translateX(velocity.x * delta);
+                controls.getObject().translateY(velocity.y * delta);
+                controls.getObject().translateZ(velocity.z * delta);
+
+                if (controls.getObject().position.y < 10) {
+
+                    velocity.y = 0;
+                    controls.getObject().position.y = 10;
+
+                    canJump = true;
+
+                }
+
+                prevTime = time;
+
+            }
+
+            renderer.autoClear = false;
+            renderer.clear();
+            renderer.render(backgroundScene , backgroundCamera);
+            renderer.render(scene, camera);
+
+        }
+    </script>
+</body>
+
+</html>

@@ -51,7 +51,7 @@
 
 							requestAnimationFrame( animate );
 
-							//controls.update();
+							controls.update();
 							//renderer.render(scene, camera);
 							render();
 						};
@@ -65,7 +65,7 @@
 
 						camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1100);
 
-						//controls = new THREE.DeviceOrientationControls( camera );
+						controls = new THREE.DeviceOrientationControls( camera );
 
 
 			
@@ -89,8 +89,9 @@
 
 
 
-for ( var i = 0; i < 10; i ++ ) {
-					/*var colorA = Math.random() ;
+var roofGeo, faceColors,roofMesh;
+            for (var i = 0; i < 5; i++) {
+                /*var colorA = Math.random() ;
 					var colorB = Math.random() ;
 					var colorC = Math.random() ;
 					material = new THREE.MeshLambertMaterial( { specular: 0xffffff, shading: THREE.FlatShading, color: Math.random() } );
@@ -101,94 +102,723 @@ for ( var i = 0; i < 10; i ++ ) {
 					mesh.position.z = Math.floor( Math.random() * 20 - 10 ) * 90;
 					scene.add( mesh );*/
 
-					var textureIN = "assets/beat_hotel_tex_outside.jpg";
-					var textureOUT = "assets/beat_hotel.jpg";
-					var sphereIN = new THREE.SphereGeometry(48,48,48);
-					var sphereOUT = new THREE.SphereGeometry(50,50,50);
-					var insidematerial, outsidematerial;
+
+                ////////////////////////////////////////////////////////
+			
+
+                var textureIN = "assets/beat_hotel.jpg";
+                var textureOUT = "assets/beat_hotel.jpg";
+                var sphereIN = new THREE.SphereGeometry(48, 48, 48);
+                var sphereOUT = new THREE.SphereGeometry(50, 50, 50);
+                var insidematerial, outsidematerial;
+                insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN)
+                });
+                insidematerial.side = THREE.DoubleSide;
+                outsidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT)
+                });
+                outsidematerial.side = THREE.DoubleSide;
+                var mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+                mesh_inside.position.x = Math.floor(Math.random() * 20 - 10) * 90;
+                mesh_inside.position.y = Math.floor(Math.random() * 20) * 10 + 10;
+                // mesh_inside.position.z = Math.floor( Math.random() * 20 - 10 ) * 90;
+                mesh_inside.position.z = Math.floor( Math.random() * 10 ) * 90;
+                var mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+                mesh_outside.position = mesh_inside.position;
+                scene.add(mesh_inside);
+                scene.add(mesh_outside);
+
+				roofGeo = new THREE.CylinderGeometry(0, 50, 50, 4, false);
+               	faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+                roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.DoubleSide,
+                    colors: Math.random()
+                }));
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside.position.x;
+                roofMesh.position.z = mesh_outside.position.z;
+                roofMesh.position.y = 50;
+                scene.add(roofMesh);
+
+                ////////////////////////////////////////////////////////
+
+                // textureIN = "assets/beat_hotel_tex_outside.jpg";
+                // textureOUT = "assets/birds-a-flock-of-seagulls-john-harmon.jpg";
+                // var sphereIN = new THREE.SphereGeometry(48, 48, 48);
+                // var sphereOUT = new THREE.SphereGeometry(50, 50, 50);
+                // var insidematerial, outsidematerial;
+                // insidematerial = new THREE.MeshBasicMaterial({
+                //     map: THREE.ImageUtils.loadTexture(textureIN)
+                // });
+                // insidematerial.side = THREE.DoubleSide;
+                // outsidematerial = new THREE.MeshBasicMaterial({
+                //     map: THREE.ImageUtils.loadTexture(textureOUT)
+                // });
+                // outsidematerial.side = THREE.DoubleSide;
+                // var mesh_inside3 = new THREE.Mesh(sphereIN, insidematerial);
+                // mesh_inside.position.x = 90;
+                // //mesh_inside3.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+                // mesh_inside3.position.y = 0;
+                // mesh_inside3.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+                // var mesh_outside3 = new THREE.Mesh(sphereOUT, outsidematerial);
+                // mesh_outside3.position = mesh_inside3.position;
+                // scene.add(mesh_inside3);
+                // scene.add(mesh_outside3);
+
+
+                ////////////////////////////////////////////////////////
+
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/stacy/texture-inside.jpg";
+                textureOUT = "assets/stacy/insane-outside.jpg";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN)
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.BackSide;
+                var mesh_inside1 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside1.position.x = 90;
+                //mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+                mesh_inside1.position.y = 0;
+                mesh_inside1.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+                scene.add(mesh_inside1);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT)
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside1 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside1.position = mesh_inside1.position;
+                scene.add(mesh_outside1);
+
+				sphereIN = new THREE.SphereGeometry(48,48,48);
+					sphereOUT = new THREE.SphereGeometry(50,50,50);
+	    textureIN = "assets/stacy/men.jpg";
+                textureOUT = "assets/stacy/men.jpg";
+					insidematerial, outsidematerial;
 					insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });			
 					insidematerial.side = THREE.DoubleSide;
 					outsidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });			
 					outsidematerial.side = THREE.DoubleSide;
-					var mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
-					mesh_inside.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
-					mesh_inside.position.y = Math.floor( Math.random() * 20 ) * 10 + 10;
-					mesh_inside.position.z = Math.floor( Math.random() * 20 - 10 ) * 90;
-					var mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+					mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+					mesh_inside.position = mesh_outside1;
+					mesh_inside.y = 80;
+					mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+					mesh_outside.position= mesh_outside1.position;
+					mesh_outside.y = 80;
+					scene.add(mesh_inside);
+					scene.add(mesh_outside);
+
+                ////////////////////////////////////////////////////////
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/jack/texture-inside.jpg";
+                textureOUT = "assets/jack/vegas-strip.jpg";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN)
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.BackSide;
+                var mesh_inside3 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside3.position.x = 90;
+                //mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+                mesh_inside3.position.y = 0;
+                mesh_inside3.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+
+                scene.add(mesh_inside3);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT)
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside3 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside3.position = mesh_inside3.position;
+                scene.add(mesh_outside3);
+
+				roofGeo = new THREE.CylinderGeometry(0, 50, 50, 4, false);
+               	faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+
+                roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                 	map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.FrontSide,
+                    colors: Math.random()
+                }));
+
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside3.position.x;
+                roofMesh.position.z = mesh_outside3.position.z;
+                roofMesh.position.y = 50;
+                scene.add(roofMesh);
+
+                ////////////////////////////////////////////////////////
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/jack/finding-nemo.jpg";
+                textureOUT = "assets/kit/texture-outside.jpg";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN)
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside4 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside4.position.x = 90;
+                //mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+                mesh_inside4.position.y = 0;
+                mesh_inside4.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+
+                scene.add(mesh_inside4);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT)
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside4 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside4.position = mesh_inside4.position;
+                scene.add(mesh_outside4);
+
+				roofGeo = new THREE.CylinderGeometry(0, 50, 50, 4, false);
+               	faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+                roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.DoubleSide,
+                    colors: Math.random()
+                }));
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside.position.x;
+                roofMesh.position.z = mesh_outside.position.z;
+                roofMesh.position.y = 50;
+                scene.add(roofMesh);
+                ////////////////////////////////////////////////////////
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/jack/finding-nemo.jpg";
+                textureOUT = "assets/jack/vegas-strip.jpg";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN)
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside5 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside5.position.x = 90;
+                //mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+                mesh_inside5.position.y = 0;
+                mesh_inside5.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+
+                scene.add(mesh_inside5);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT)
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside5 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside5.position = mesh_inside5.position;
+                scene.add(mesh_outside5);
+
+
+	roofGeo = new THREE.CylinderGeometry(0, 50, 50, 4, false);
+                faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+
+                roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.DoubleSide,
+                    colors: Math.random()
+                }));
+
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside5.position.x;
+                roofMesh.position.z = mesh_outside5.position.z;
+
+                roofMesh.position.y = 50;
+                scene.add(roofMesh);
+
+                ////////////////////////////////////////////////////////
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/jack/texture-inside.jpg";
+                textureOUT = "assets/jack/finding-nemo.jpg";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN)
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside6 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside.position.x = 90;
+                //mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+                mesh_inside6.position.y = 0;
+                mesh_inside6.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+
+                scene.add(mesh_inside6);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT)
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside6 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside6.position = mesh_inside6.position;
+                scene.add(mesh_outside6);
+
+
+roofGeo = new THREE.CylinderGeometry(0, 50, 50, 4, false);
+                faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+
+                roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.DoubleSide,
+                    colors: Math.random()
+                }));
+
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside6.position.x;
+                roofMesh.position.z = mesh_outside6.position.z;
+
+                roofMesh.position.y = 50;
+                scene.add(roofMesh);
+                ////////////////////////////////////////////////////////
+
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/kit/texture-inside.jpg";
+                textureOUT = "assets/kit/texture-atlas.jpg";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN)
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside7 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside7.position.x = 90;
+                //mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+                mesh_inside7.position.y = 0;
+                mesh_inside7.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+                scene.add(mesh_inside7);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT)
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside7 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside7.position = mesh_inside7.position;
+                scene.add(mesh_outside7);
+
+
+roofGeo = new THREE.CylinderGeometry(0, 50, 50, 4, false);
+                faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+
+                roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.DoubleSide,
+                    colors: Math.random()
+                }));
+
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside7.position.x;
+                roofMesh.position.z = mesh_outside7.position.z;
+
+                roofMesh.position.y = 50;
+                scene.add(roofMesh);
+
+                ////////////////////////////////////////////////////////
+
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/jack/finding-nemo.jpg";
+                textureOUT = "assets/jack/beach.jpg";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN)
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside8 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside8.position.x = Math.floor( Math.random() * 10 ) * 90;
+                mesh_inside8.position.y = 0;
+                mesh_inside8.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+                scene.add(mesh_inside8);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT)
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside8 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside8.position = mesh_inside8.position;
+                scene.add(mesh_outside8);
+
+roofGeo = new THREE.CylinderGeometry(0, 50, 50, 4, false);
+                faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+
+                roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.DoubleSide,
+                    colors: Math.random()
+                }));
+
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside8.position.x;
+                roofMesh.position.z = mesh_outside8.position.z;
+
+                roofMesh.position.y = 50;
+                scene.add(roofMesh);
+
+
+                ////////////////////////////////////////////////////////
+
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/jack/Wash-Park-Inside.jpg";
+                textureOUT = "assets/jack/Wash-Park-Outside.jpg";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN)
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside9 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside9.position.x = Math.floor( Math.random() * 10 ) * 90;
+                mesh_inside9.position.y = 0;
+                mesh_inside9.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+                scene.add(mesh_inside2);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT)
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside9 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside9.position = mesh_inside9.position;
+                scene.add(mesh_outside9);
+
+
+               	faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+                roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.DoubleSide,
+                    colors: Math.random()
+                }));
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside9.position.x;
+                roofMesh.position.z = mesh_outside9.position.z;
+                roofMesh.position.y = 50;
+                scene.add(roofMesh);
+                ////////////////////////////////////////////////////////
+
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/kit/Trans-Kit.png";
+                textureOUT = "assets/kit/Trans-Kit.png";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN), transparent: true
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside2 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside2.position.x = Math.floor( Math.random() * 10 ) * 90;
+                mesh_inside2.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+                scene.add(mesh_inside2);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT), transparent: true
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside2 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside2.position = mesh_inside2.position;
+                scene.add(mesh_outside2);
+
+
+
+               	faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
+                roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.DoubleSide,
+                    colors: Math.random()
+                }));
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside2.position.x;
+                roofMesh.position.z = mesh_outside2.position.z;
+                roofMesh.position.y = 50;
+                scene.add(roofMesh);
+
+                ////////////////////////////////////////////////////////
+
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/kit/insidespace-kit.png";
+                textureOUT = "assets/kit/outerhouse-kit.png";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN), transparent: true
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside2 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside.position.x = 90;
+                mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+                mesh_inside2.position.y = 0;
+                mesh_inside2.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+                scene.add(mesh_inside2);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT), transparent: true
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside2 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside2.position = mesh_inside2.position;
+                scene.add(mesh_outside2);
+
+
+                ////////////////////////////////////////////////////////
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/kit/outerhouse-kit.png";
+                textureOUT = "assets/kit/insidespace-kit.png";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN), transparent: true
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside2 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside.position.x = 90;
+                mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
+                mesh_inside2.position.y = 0;
+                mesh_inside2.position.z = Math.floor(Math.random() * 20 - 10) * 90;
+                scene.add(mesh_inside2);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT), transparent: true
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside2 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside2.position = mesh_inside2.position;
+                scene.add(mesh_outside2);
+
+
+
+                ////////////////////////////////////////////////////////
+
+                var boxOUT = new THREE.BoxGeometry(50, 50, 50);
+                var boxIN = new THREE.BoxGeometry(48, 48, 48);
+                textureIN = "assets/stacy/insane-inside.jpg";
+                textureOUT = "assets/stacy/insane-outside.jpg";
+                boxIN = loadTexture(boxIN);
+                var insidematerial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureIN), transparent: true
+                });
+                insidematerial.minFilter = THREE.LinearFilter;
+                insidematerial.magFilter = THREE.LinearFilter;
+                insidematerial.side = THREE.DoubleSide;
+                var mesh_inside2 = new THREE.Mesh(boxIN, insidematerial);
+                mesh_inside.position.x = 90;
+                mesh_inside2.position.x = Math.floor( Math.random() * 10 ) * 90;
+                mesh_inside2.position.y = 0;
+                mesh_inside2.position.z = Math.floor(Math.random() * 90) * 90;
+                scene.add(mesh_inside2);
+                boxOUT = loadTexture(boxOUT);
+                var atlasmaterial = new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture(textureOUT), transparent: true
+                });
+                atlasmaterial.minFilter = THREE.LinearFilter;
+                atlasmaterial.magFilter = THREE.LinearFilter;
+                atlasmaterial.side = THREE.DoubleSide;
+                var mesh_outside2 = new THREE.Mesh(boxOUT, atlasmaterial);
+                mesh_outside2.position = mesh_inside2.position;
+                scene.add(mesh_outside2);
+
+
+					sphereIN = new THREE.SphereGeometry(48,48,48);
+					sphereOUT = new THREE.SphereGeometry(50,50,50);
+	    textureIN = "assets/stacy/men.jpg";
+                textureOUT = "assets/stacy/men.jpg";
+					insidematerial, outsidematerial;
+					insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });			
+					insidematerial.side = THREE.DoubleSide;
+					outsidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });			
+					outsidematerial.side = THREE.DoubleSide;
+					mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+					mesh_inside.position = mesh_outside2;
+					mesh_inside.y = 80;
+					mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+					mesh_outside.position= mesh_outside2.position;
+					mesh_outside.y = 80;
+					scene.add(mesh_inside);
+					scene.add(mesh_outside);
+
+					var sphereIN = new THREE.SphereGeometry(48,48,48);
+					var sphereOUT = new THREE.SphereGeometry(50,50,50);
+				textureIN = "assets/kit/outerhouse-kit.png";
+                textureOUT = "assets/kit/insidespace-kit.png";
+					insidematerial, outsidematerial;
+					insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });			
+					insidematerial.side = THREE.DoubleSide;
+					outsidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });			
+					outsidematerial.side = THREE.DoubleSide;
+					mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+					mesh_inside.position.x =Math.floor( Math.random() * 20 - 10 ) * 15;
+					mesh_inside.position.y = Math.floor( Math.random() * 15- 10 ) * 10;
+					mesh_inside.position.z = Math.floor( Math.random() * 60 - 10 ) * 90;
+					mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+					mesh_outside.position= mesh_inside.position;
+					scene.add(mesh_inside);
+					scene.add(mesh_outside);
+
+                ////////////////////////////////////////////////////////
+
+					sphereIN = new THREE.SphereGeometry(48,48,48);
+					sphereOUT = new THREE.SphereGeometry(50,50,50);
+			         textureIN = "assets/jack/Wash-Park-Inside.jpg";
+                	textureOUT = "assets/jack/beach.jpg";
+					insidematerial, outsidematerial;
+					insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });			
+					insidematerial.side = THREE.DoubleSide;
+					outsidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });			
+					outsidematerial.side = THREE.DoubleSide;
+					mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+					mesh_inside.position.x =Math.floor( Math.random() * 20 - 10 ) * 15;
+					mesh_inside.position.y = Math.floor( Math.random() * 15- 10 ) * 10;
+					mesh_inside.position.z = Math.floor( Math.random() * 60 - 10 ) * 90;
+					mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
 					mesh_outside.position= mesh_inside.position;
 					scene.add(mesh_inside);
 					scene.add(mesh_outside);
 					
-					textureIN = "assets/beat_hotel_tex_outside.jpg";
-					textureOUT = "assets/jack/texture-atlas.jpg";
-					var sphereIN = new THREE.SphereGeometry(48,48,48);
-					var sphereOUT = new THREE.SphereGeometry(50,50,50);
-					var insidematerial, outsidematerial;
+					               ////////////////////////////////////////////////////////
+
+					sphereIN = new THREE.SphereGeometry(48,48,48);
+					sphereOUT = new THREE.SphereGeometry(50,50,50);
+	    textureIN = "assets/stacy/men.jpg";
+                textureOUT = "assets/stacy/men.jpg";
+					insidematerial, outsidematerial;
 					insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });			
 					insidematerial.side = THREE.DoubleSide;
 					outsidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });			
 					outsidematerial.side = THREE.DoubleSide;
-					var mesh_inside3 = new THREE.Mesh(sphereIN, insidematerial);
-					mesh_inside3.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
-					mesh_inside3.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
-					mesh_inside3.position.z = Math.floor( Math.random() * 20 - 10 ) * 90;
-					var mesh_outside3 = new THREE.Mesh(sphereOUT, outsidematerial);
-					mesh_outside3.position= mesh_inside3.position;
-					scene.add(mesh_inside3);
-					scene.add(mesh_outside3);
-					
-					
-					var boxOUT = new THREE.BoxGeometry(50,50,50);					
-					var boxIN = new THREE.BoxGeometry(48,48,48);		
-					textureIN = "assets/stacy/texture-inside.jpg";
-					textureOUT = "assets/jack/texture-atlas.jpg";			
-					boxIN = loadTexture(boxIN);
-					var insidematerial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureIN ) });
-					insidematerial.minFilter = THREE.LinearFilter;
-					insidematerial.magFilter = THREE.LinearFilter;
-					insidematerial.side = THREE.DoubleSide;
-					var mesh_inside2 = new THREE.Mesh(boxIN, insidematerial);
-					mesh_inside2.position.x = Math.floor( Math.random() * 20 - 10 ) * 90;
-					mesh_inside2.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
-					mesh_inside2.position.z = Math.floor( Math.random() * 20 - 10 ) * 90;
-					scene.add(mesh_inside2);					
-					boxOUT = loadTexture(boxOUT);
-					var atlasmaterial = new THREE.MeshBasicMaterial( { map: THREE.ImageUtils.loadTexture( textureOUT ) });
-					atlasmaterial.minFilter = THREE.LinearFilter;
-					atlasmaterial.magFilter = THREE.LinearFilter;
-					atlasmaterial.side = THREE.DoubleSide;	
-					var mesh_outside2 = new THREE.Mesh(boxOUT, atlasmaterial);
-					mesh_outside2.position= mesh_inside2.position;
-					scene.add(mesh_outside2);
-				
-				
-			
-
-					var roofGeo = new THREE.CylinderGeometry(0, 100, 100, 4, false); 		
-					var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
-					faceColors.forEach( function(color, idx) 
-						{ roofGeo.faces[2 * idx + 1].color.setHex(color);});
-			
-					var roofMesh = new THREE.Mesh( roofGeo, new THREE.MeshBasicMaterial( {	map :THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"), side:THREE.DoubleSide, colors: Math.random()}));
-			
-					roofMesh.rotation.y = 45 * Math.PI / 180;
-					roofMesh.position.x = mesh_outside.position.x;
-					roofMesh.position.z = mesh_outside.position.z; 
-					
-					roofMesh.position.y = mesh_outside.position.y + 100;
-					//scene.add(roofMesh);
+					mesh_inside = new THREE.Mesh(sphereIN, insidematerial);
+					mesh_inside.position.x =Math.floor( Math.random() * 20 - 10 ) * 15;
+					mesh_inside.position.y = Math.floor( Math.random() * 15- 10 ) * 10;
+					mesh_inside.position.z = Math.floor( Math.random() * 90 - 10 ) * 90;
+					mesh_outside = new THREE.Mesh(sphereOUT, outsidematerial);
+					mesh_outside.position= mesh_inside.position;
+					scene.add(mesh_inside);
+					scene.add(mesh_outside);
 
 
-					//material.color.setHSL( colorA, colorB, colorC );
+                var roofGeo = new THREE.CylinderGeometry(0, 100, 100, 4, false);
+                var faceColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00];
+                faceColors.forEach(function(color, idx) {
+                    roofGeo.faces[2 * idx + 1].color.setHex(color);
+                });
 
-					objects.push( mesh );
-					//objects.push(roofMesh);
-					objects.push( mesh_inside );
-					objects.push( mesh_outside );
-					objects.push( mesh_inside2 );
-					objects.push( mesh_outside2 );
+                var roofMesh = new THREE.Mesh(roofGeo, new THREE.MeshBasicMaterial({
+                    map: THREE.ImageUtils.loadTexture("assets/roof_texture.jpg"),
+                    side: THREE.DoubleSide,
+                    colors: Math.random()
+                }));
 
-				}//for
+                roofMesh.rotation.y = 45 * Math.PI / 180;
+                roofMesh.position.x = mesh_outside.position.x;
+                roofMesh.position.z = mesh_outside.position.z;
+
+                roofMesh.position.y = mesh_outside.position.y + 100;
+                //scene.add(roofMesh);
+
+
+                //material.color.setHSL( colorA, colorB, colorC );
+
+                objects.push(mesh);
+                //objects.push(roofMesh);
+                objects.push(mesh_inside);
+                objects.push(mesh_outside);
+                objects.push(mesh_inside2);
+                objects.push(mesh_outside2);
+
+            }
 
 
 
